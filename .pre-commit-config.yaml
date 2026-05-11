@@ -1,0 +1,87 @@
+# Pre-commit hooks for HOU53-bot.
+#
+# Install once per clone:
+#   uv run pre-commit install --install-hooks
+#   uv run pre-commit install --hook-type commit-msg
+#
+# Run on the whole repo at any time:
+#   uv run pre-commit run --all-files
+#
+# The selection below is intentionally small: every hook here is a gate we
+# expect to hold the line in CI too. New hooks land via an ADR or a
+# chore(ci) PR — not silently.
+
+default_language_version:
+  python: python3.14
+
+repos:
+  # --- Hygiene --------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+        args: ["--unsafe"]  # allow custom tags in compose / gh actions
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        exclude: \.(md|patch)$
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # --- Secrets scanning ------------------------------------------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  # --- Python: lint + format -------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+      - id: ruff-format
+
+  # --- Python: types ---------------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        files: ^(ml/src|apps/api/src)/
+        additional_dependencies:
+          - pydantic>=2.0
+        args:
+          - --config-file=pyproject.toml
+
+  # --- Notebooks: strip outputs so diffs stay reviewable --------------------
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+
+  # --- Conventional commit messages -----------------------------------------
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - docs
+          - style
+          - refactor
+          - perf
+          - test
+          - build
+          - ci
+          - chore
+          - revert
+          - data
+          - model
