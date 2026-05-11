@@ -1,19 +1,187 @@
+# Root pyproject.toml — workspace aggregator for the HOU53-bot monorepo.
+#
+# Layout:
+#   ./                     → dev tooling + workspace root (this file)
+#   ./ml/                  → installable package `hou53-ml` (training code)
+#   ./apps/api/            → FastAPI service (installable: `hou53-api`)
+#
+# Runtime deps for training live in `ml/pyproject.toml`. Runtime deps for
+# the API will live in `apps/api/pyproject.toml` (added in Phase 4). This
+# root project pulls both as workspace members and adds the tooling needed
+# across the monorepo (lint, format, type, test, DVC, MLflow, pre-commit).
+#
+# See:
+#   - docs/adr/0001-monorepo-structure.md
+#   - docs/adr/0004-data-versioning-dvc.md
+#   - docs/adr/0005-experiment-tracking-mlflow.md
+
 [project]
 name = "hou53-bot"
 version = "0.1.0"
-description = "HOU53-bot will help you find a fair price for any house based on your description! The problem is, we just have the data, but HOU53-bot has yet to learn about it."
+description = "HOU53-bot will help you find a fair price for any house based on your description."
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.14"
-dependencies = [
-    "fastapi>=0.135.3",
-    "joblib>=1.5.3",
-    "matplotlib>=3.10.8",
-    "pandas>=3.0.2",
-    "pydantic>=2.13.0",
-    "pytest>=9.0.3",
-    "ruff>=0.15.10",
-    "scikit-learn>=1.8.0",
-    "shap>=0.51.0",
-    "uvicorn>=0.44.0",
-    "xgboost>=3.2.0",
+authors = [{ name = "Alan Salazar" }]
+# Runtime deps stay empty at the root on purpose — the root is a workspace,
+# not a runtime. Each subpackage declares its own.
+dependencies = []
+
+[dependency-groups]
+# Tooling used across the monorepo. Installed via `uv sync --all-groups`
+# or simply `uv sync` (uv installs dev groups by default).
+dev = [
+    # Lint + format
+    "ruff>=0.8.4",
+    # Types
+    "mypy>=1.14.1",
+    # Tests
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.6.1",
+    "hypothesis>=6.122.0",
+    # Pre-commit orchestration
+    "pre-commit>=4.0.1",
+    # Notebook authoring (paired files)
+    "jupytext>=1.16.4",
+    "nbstripout>=0.8.1",
+]
+
+ml-tooling = [
+    # Experiment tracking and data/model versioning. Pinned at root so
+    # `uv run mlflow ui` and `uv run dvc ...` work from anywhere.
+    "mlflow>=2.19.0",
+    "dvc[gdrive]>=3.58.0",
+    "optuna>=4.1.0",
+]
+
+[tool.uv]
+# Treat the ml/ directory as an editable workspace member. apps/api is added
+# in Phase 4, apps/web is managed by pnpm so does not appear here.
+package = false
+
+[tool.uv.workspace]
+members = ["ml"]
+
+[tool.uv.sources]
+hou53-ml = { workspace = true }
+
+# -----------------------------------------------------------------------------
+# Ruff — linter + formatter. One tool, consistent across the monorepo.
+# -----------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+extend-exclude = [
+    "ml/notebooks/**/*.ipynb",  # handled by jupytext/nbstripout
+    "data",
+    "models",
+    "mlruns",
+    ".venv",
+]
+
+[tool.ruff.lint]
+# Curated rule set: correctness + style + common bug classes. We avoid the
+# "enable everything" approach because false-positive noise erodes the
+# signal. New rule families are added via a `chore(ci)` PR.
+select = [
+    "E", "W",      # pycodestyle
+    "F",           # pyflakes
+    "I",           # isort
+    "B",           # bugbear
+    "C4",          # comprehensions
+    "UP",          # pyupgrade
+    "N",           # naming
+    "S",           # bandit (security)
+    "SIM",         # simplify
+    "PTH",         # use pathlib
+    "RUF",         # ruff-specific
+    "ANN",         # annotations
+    "D",           # pydocstyle
+]
+ignore = [
+    "D100", "D101", "D102", "D103", "D104", "D105", "D107",  # enforce docstrings only on public APIs
+    "ANN401",  # allow `Any` where genuinely needed (typed DataFrames)
+    "S101",    # `assert` is fine in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S", "D", "ANN"]
+"ml/notebooks/**/*.py" = ["D", "ANN", "E501", "S"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# -----------------------------------------------------------------------------
+# Mypy — types. Strict on our code; permissive on third-party.
+# -----------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+no_implicit_reexport = true
+disallow_untyped_decorators = true
+plugins = ["pydantic.mypy"]
+files = ["ml/src", "apps/api/src"]
+exclude = [
+    '^ml/notebooks/',
+    '^apps/web/',
+    '^\.venv/',
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "xgboost.*",
+    "shap.*",
+    "mlflow.*",
+    "optuna.*",
+    "sklearn.*",
+    "dvc.*",
+]
+ignore_missing_imports = true
+
+# -----------------------------------------------------------------------------
+# Pytest — discovery, coverage, markers.
+# -----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=ml/src",
+    "--cov=apps/api/src",
+    "--cov-report=term-missing",
+]
+testpaths = ["ml/tests", "apps/api/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: integration tests hitting real external services",
+    "model: tests that require the trained model artifact",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:pkg_resources.*",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["ml/src", "apps/api/src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
 ]
