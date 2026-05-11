@@ -1,0 +1,38 @@
+# <type>(<scope>): <summary>
+#
+# <body — why the change, not what>
+#
+# <footer — BREAKING CHANGE: ..., Refs: #123, ADR: docs/adr/NNNN-...md>
+#
+# -----------------------------------------------------------------------------
+# TYPE must be one of:
+#   feat     — new user-visible feature
+#   fix      — bug fix
+#   docs     — documentation only
+#   style    — formatting, no logic change
+#   refactor — code restructure, no behavior change
+#   perf     — performance improvement
+#   test     — adding or fixing tests
+#   build    — build system, dependencies
+#   ci       — CI configuration
+#   chore    — miscellaneous (lint config, tool setup)
+#   revert   — revert a previous commit
+#   data     — DVC-tracked dataset change
+#   model    — DVC-tracked model change
+#
+# SCOPE (optional) is one of: ml, api, web, infra, docs, deps.
+#
+# SUMMARY:
+#   - imperative mood ("add", not "added")
+#   - no trailing period
+#   - <= 72 characters
+#
+# BODY:
+#   - explain WHY, not WHAT (the diff shows the what)
+#   - wrap at 72 chars
+#
+# FOOTER:
+#   - "BREAKING CHANGE:" for incompatible API / schema / model changes
+#   - "ADR:" link when the change implements or changes a decision
+#   - "Refs:" or "Closes:" issues
+# -----------------------------------------------------------------------------
