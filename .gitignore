@@ -207,3 +207,70 @@ marimo/_lsp/
 __marimo__/
 
 .DS_store
+.DS_Store
+
+# -----------------------------------------------------------------------------
+# HOU53-bot project-specific entries
+# -----------------------------------------------------------------------------
+
+# MLflow — runs are local, recoverable, and often large.
+# Best runs are archived as DVC-tracked artifacts under models/.
+/mlruns/
+/mlartifacts/
+
+# DVC — cache and temporary state; the .dvc files themselves ARE committed.
+/.dvc/cache
+/.dvc/tmp
+/.dvc/plots
+/.dvc/config.local
+
+# Derived data. raw/ and external/ are DVC-tracked (see ADR-0004);
+# interim/ and processed/ are regenerable — no need to track them at all.
+/data/interim/*
+!/data/interim/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+
+# Model binaries. Only the .dvc pointer files are committed.
+/models/*
+!/models/*.dvc
+!/models/README.md
+!/models/.gitkeep
+
+# Jupyter paired files — we commit the .py, regenerate the .ipynb locally.
+ml/notebooks/*.ipynb
+.jupyter/
+.jupytext.toml
+
+# -----------------------------------------------------------------------------
+# Node / Next.js (apps/web, added in Phase 6)
+# -----------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.pnpm-debug.log
+.next/
+out/
+.turbo/
+.vercel/
+next-env.d.ts
+
+# -----------------------------------------------------------------------------
+# Local env and secrets — never committed.
+# Every app ships a .env.example; .env itself stays local.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# Playwright / test artifacts (added in Phase 8)
+/test-results/
+/playwright-report/
+/coverage/
+.coverage
+htmlcov/
+
+# IDE caches
+.idea/
+.vscode/
+*.swp
+*.swo
