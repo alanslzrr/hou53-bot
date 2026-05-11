@@ -1,0 +1,44 @@
+# ml/ — installable Python package `hou53-ml`.
+#
+# This package holds everything that runs OFFLINE (training, feature
+# engineering, evaluation, explainability helpers). The FastAPI service in
+# apps/api/ depends on it at import time so that the training-time schema
+# and serving-time schema are literally the same class — single source of
+# truth, enforced by Python imports.
+#
+# It is intentionally thin at Phase 0: stable public surface (settings +
+# constants) plus package metadata. Subsequent phases fill in the submodules
+# listed in the layout below.
+
+[project]
+name = "hou53-ml"
+version = "0.1.0"
+description = "Training pipeline, feature engineering, and evaluation for HOU53-bot."
+readme = "README.md"
+requires-python = ">=3.14"
+license = { text = "MIT" }
+authors = [{ name = "Alan Salazar" }]
+
+dependencies = [
+    # Core scientific stack
+    "numpy>=2.1.0",
+    "pandas>=2.2.0",
+    "scikit-learn>=1.8.0",
+    "xgboost>=3.2.0",
+    # Explainability
+    "shap>=0.51.0",
+    # Serialization of the whole sklearn pipeline
+    "joblib>=1.5.0",
+    # Typed settings / constants
+    "pydantic>=2.13.0",
+    "pydantic-settings>=2.6.0",
+    # Config files (for ml/configs/*.yaml)
+    "pyyaml>=6.0.2",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hou53_ml"]

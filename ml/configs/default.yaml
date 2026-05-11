@@ -1,0 +1,50 @@
+# Default training configuration for HOU53-bot.
+#
+# Loaded by the Phase 2 training entry point. Kept out of Python because:
+#   - YAML is easier to diff across experiments.
+#   - MLflow logs it verbatim as an artifact.
+#   - Hyperparameter search overrides can be produced by copying + editing.
+#
+# Anything here is the "reasonable baseline"; Optuna will sweep over a
+# subset and record the winning values back into MLflow.
+
+experiment_name: hou53-xgboost-baseline
+
+random_seed: 42
+
+split:
+  test_size: 0.2
+  stratify_on: SalePrice       # binned into quintiles at runtime
+
+cv:
+  folds: 5
+  shuffle: true
+
+target:
+  name: SalePrice
+  transform: log1p             # TransformedTargetRegressor(func=log1p, inverse=expm1)
+
+features:
+  drop_grlivarea_outliers: true
+  grlivarea_threshold: 4000.0
+  use_target_encoding_for:
+    - Neighborhood
+
+model:
+  kind: xgboost
+  params:
+    n_estimators: 1000
+    learning_rate: 0.05
+    max_depth: 4
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 3
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    objective: reg:squarederror
+    tree_method: hist
+    early_stopping_rounds: 50
+
+optuna:
+  n_trials: 50
+  timeout_seconds: 1800
