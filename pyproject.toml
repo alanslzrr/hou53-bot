@@ -7,8 +7,10 @@
 #
 # Runtime deps for training live in `ml/pyproject.toml`. Runtime deps for
 # the API will live in `apps/api/pyproject.toml` (added in Phase 4). This
-# root project pulls both as workspace members and adds the tooling needed
-# across the monorepo (lint, format, type, test, DVC, MLflow, pre-commit).
+# root project pulls them in as workspace members so a single `uv sync`
+# from the repo root sets up the whole dev environment, and adds the
+# tooling needed across the monorepo (lint, format, type, test, DVC,
+# MLflow, pre-commit).
 #
 # See:
 #   - docs/adr/0001-monorepo-structure.md
@@ -23,9 +25,13 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.14"
 authors = [{ name = "Alan Salazar" }]
-# Runtime deps stay empty at the root on purpose — the root is a workspace,
-# not a runtime. Each subpackage declares its own.
-dependencies = []
+# The root depends on its workspace members so `uv sync` installs them
+# editable. `[tool.uv.sources]` below redirects these names to the local
+# paths instead of PyPI. Tooling (ruff, mypy, pytest, …) lives in
+# `[dependency-groups]`, NOT here — it should not leak into runtime images.
+dependencies = [
+    "hou53-ml",
+]
 
 [dependency-groups]
 # Tooling used across the monorepo. Installed via `uv sync --all-groups`
