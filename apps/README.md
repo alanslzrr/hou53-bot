@@ -8,7 +8,7 @@ defined under here.
 | Service | Language | Purpose | Phase |
 |---|---|---|---|
 | `api/` | Python (FastAPI) | Inference + SHAP explanations | 4 |
-| `web/` | TypeScript (Next.js) | User-facing UI, NLP route handler | 6 |
+| `web/` | TypeScript (Next.js) | NLP route handler now; user-facing UI in Phase 6 | 5/6 |
 
 The offline training code lives outside `apps/` under `ml/` precisely
 because it is not a deployable service — see
