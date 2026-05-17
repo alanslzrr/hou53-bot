@@ -28,7 +28,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def _find_repo_root() -> Path:
-    """Walk upward from this file until a ``pyproject.toml`` with the root
+    """Find the repository root.
+
+    Walk upward from this file until a ``pyproject.toml`` with the root
     project name is found. Falls back to three levels up.
 
     Used as the default when ``HOU53_REPO_ROOT`` is not set. Detecting the

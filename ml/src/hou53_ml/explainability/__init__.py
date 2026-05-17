@@ -1,4 +1,9 @@
-"""SHAP-based explainability and natural-language summaries.
+"""SHAP-based per-prediction explainer."""
 
-Filled in Phase 3 and wired into the API in Phase 4.
-"""
+from hou53_ml.explainability.shap_explainer import (
+    Explanation,
+    FeatureContribution,
+    PipelineSHAPExplainer,
+)
+
+__all__ = ["Explanation", "FeatureContribution", "PipelineSHAPExplainer"]

@@ -8,6 +8,6 @@ depend on.
 
 from hou53_ml.config import Settings, get_settings
 
-__all__ = ["Settings", "get_settings", "__version__"]
+__all__ = ["Settings", "__version__", "get_settings"]
 
 __version__ = "0.1.0"
