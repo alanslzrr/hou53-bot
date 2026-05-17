@@ -49,3 +49,5 @@ pnpm --dir apps/web generate:contracts
 Set `OPENAI_API_KEY` locally or in the deployment environment.
 The parser default is `gpt-5.4-mini`. Temperature is intentionally omitted
 because OpenAI reasoning models do not support it.
+The default timeout is 15 seconds; local smoke tests with `gpt-5.4-mini`
+completed in roughly 4-6 seconds.

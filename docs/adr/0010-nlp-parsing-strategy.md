@@ -69,8 +69,9 @@ loop says single-shot is the bottleneck.
 ### Negative Consequences / Trade-offs
 
 - Non-determinism: the same input may produce slightly different outputs.
-  Mitigated by `temperature=0` and by showing the parsed values to the
-  user for confirmation before sending to `/predict`.
+  Mitigated by deterministic provider settings where supported and by
+  showing the parsed values to the user for confirmation before sending
+  to `/predict`.
 - Cost per request, however small, is nonzero. Mitigated by (a) choosing a
   small/cheap model (Haiku or 4o-mini class), (b) caching prompts on the
   provider side, (c) debouncing the "parse" button so we do not fire on

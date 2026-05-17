@@ -68,7 +68,7 @@ describe("parseHouseDescription", () => {
             strictJsonSchema: false,
           },
         },
-        timeout: { totalMs: 4_000 },
+        timeout: { totalMs: 15_000 },
       }),
     );
   });
