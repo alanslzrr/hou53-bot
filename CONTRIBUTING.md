@@ -12,7 +12,6 @@ The rules below keep the repository readable and reproducible.
 | Node.js | 20 LTS | Next.js runtime |
 | pnpm | 9.x | Frontend package manager |
 | Docker | 24+ | End-to-end run |
-| DVC | 3.x | Data + model versioning |
 | pre-commit | 3.x | Local linting gate |
 
 One-time setup:
@@ -63,7 +62,7 @@ git config commit.template .gitmessage
 ### Allowed commit types
 
 `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
-`chore`, `revert`, `data` (DVC data change), `model` (DVC model change).
+`chore`, `revert`, `data` (dataset change), `model` (model artifact change).
 
 ## 3. ADRs
 
@@ -100,11 +99,9 @@ Wired into pre-commit hooks and CI.
 
 - `data/raw/` and `data/external/` — small challenge source files kept
   in Git for reproducible local runs.
-- `models/` — binary artifacts tracked with DVC pointers, never
-  committed to Git directly.
-- After `git pull`: `dvc pull` fetches model artifacts once a DVC remote
-  is configured for the environment.
-- Details: [`docs/adr/0004-data-versioning-dvc.md`](./docs/adr/0004-data-versioning-dvc.md).
+- `models/` — current production model artifact and metadata, committed
+  directly to Git because the files are small.
+- Details: [`docs/adr/0004-small-artifacts-in-git.md`](./docs/adr/0004-small-artifacts-in-git.md).
 
 ## 7. Secrets and environment
 

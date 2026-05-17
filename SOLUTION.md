@@ -30,8 +30,8 @@ Housing dataset. It consists of:
 │   ├── src/hou53_ml/
 │   ├── configs/
 │   └── tests/
-├── data/           DVC-tracked dataset (raw, interim, processed, external)
-├── models/         DVC-tracked model artifacts
+├── data/           Source dataset + generated data directories
+├── models/         Committed production model artifact + metadata
 ├── docs/
 │   ├── adr/        Architecture Decision Records (MADR)
 │   ├── eda/        Exported EDA report
@@ -100,7 +100,7 @@ Every non-trivial decision is captured as an ADR under
 | Repo layout | `apps/` + `ml/` + `data/` + `docs/` | [0001](./docs/adr/0001-monorepo-structure.md) |
 | Git | Trunk-based + Conventional Commits | [0002](./docs/adr/0002-git-workflow.md) |
 | Database | Neon (serverless Postgres) | [0003](./docs/adr/0003-database-choice.md) |
-| Data & model versioning | DVC | [0004](./docs/adr/0004-data-versioning-dvc.md) |
+| Data & model artifacts | Small files committed directly to Git | [0004](./docs/adr/0004-small-artifacts-in-git.md) |
 | Experiment tracking | MLflow, local file backend | [0005](./docs/adr/0005-experiment-tracking-mlflow.md) |
 | Regressor | XGBoost (Ridge baseline) | [0006](./docs/adr/0006-model-selection-xgboost.md) |
 | Metric | RMSE on `log1p(SalePrice)` | [0007](./docs/adr/0007-evaluation-metric-rmse-log.md) |
@@ -191,9 +191,7 @@ Every non-trivial decision is captured as an ADR under
 
 - **Reproducibility.** Every commit on `main` pins: Python version
   (`.python-version`), Python dependencies (`uv.lock`), Node dependencies
-  (committed lockfile), source dataset in Git, and model hashes
-  (`models/*.dvc`). Fetching model binaries from another clone requires
-  configuring the DVC remote.
+  (committed lockfile), source dataset, and production model artifact.
 - **Explainability.** The API returns top-contributing features (via SHAP
   `TreeExplainer`) with every prediction. The frontend renders them as a
   waterfall chart with a natural-language summary.

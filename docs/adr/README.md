@@ -42,7 +42,7 @@ An ADR moves through these statuses:
 | [0001](./0001-monorepo-structure.md) | Monorepo structure with `apps/`, `ml/`, `data/`, `docs/` | proposed |
 | [0002](./0002-git-workflow.md) | Trunk-based development with Conventional Commits | proposed |
 | [0003](./0003-database-choice.md) | Neon (serverless Postgres) for application data | proposed |
-| [0004](./0004-data-versioning-dvc.md) | DVC for dataset and model artifact versioning | proposed |
+| [0004](./0004-small-artifacts-in-git.md) | Keep small challenge data and model artifacts in Git | proposed |
 | [0005](./0005-experiment-tracking-mlflow.md) | MLflow (local tracking) for experiment metadata | proposed |
 | [0006](./0006-model-selection-xgboost.md) | XGBoost as the production regressor | proposed |
 | [0007](./0007-evaluation-metric-rmse-log.md) | RMSE on `log1p(SalePrice)` as the primary metric | proposed |

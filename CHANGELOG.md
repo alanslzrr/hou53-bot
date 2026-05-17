@@ -91,7 +91,7 @@ on release; until the first release, curated entries live under
   the EDA findings.
 - `pyproject.toml`: split runtime and development dependency groups,
   added lint/format/type/test tooling.
-- `.gitignore`: added MLflow runs, DVC cache, Node/Next.js artifacts.
+- `.gitignore`: added MLflow runs, generated data, Node/Next.js artifacts.
 
 ### Removed
 

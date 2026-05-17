@@ -48,18 +48,18 @@ standard the evaluators will recognize.
 ### Negative Consequences / Trade-offs
 
 - `mlruns/` can grow large. Mitigated by `.gitignore` (it is never
-  committed) and by archiving only the best runs as DVC-tracked artifacts.
+  committed); the production artifact is exported explicitly to `models/`.
 - No team features (sharing, permissions). Out of scope for the challenge.
 
-## Division of labor between MLflow and DVC
+## Division of labor between MLflow and committed artifacts
 
 | Concern | Tool |
 |---|---|
-| Dataset and model file storage | DVC |
-| Training DAG (data → features → train) | DVC pipelines |
+| Challenge dataset and production model file storage | Git |
+| Training DAG (load data → features → train → export artifact) | Python entry point |
 | Run metadata (params, metrics, tags) | MLflow |
 | Intra-run artifacts (plots, feature importances) | MLflow |
-| "This commit used this dataset and produced this model" | DVC |
+| "This commit used this dataset and produced this model" | Git + model metadata JSON |
 | "Which hyperparameters won CV?" | MLflow |
 
 ## Pros and Cons of the Options
@@ -90,4 +90,4 @@ standard the evaluators will recognize.
 ## Links
 
 - [MLflow docs](https://mlflow.org/docs/latest/index.html)
-- [ADR-0004 — DVC](./0004-data-versioning-dvc.md)
+- [ADR-0004 — small artifacts in Git](./0004-small-artifacts-in-git.md)

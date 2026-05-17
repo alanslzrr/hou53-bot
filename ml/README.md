@@ -16,7 +16,7 @@ ml/
 │   ├── config.py         # typed runtime settings (pydantic-settings)
 │   ├── constants.py      # domain constants (fields that legitimately use
 │   │                     # "NA" as a category, not a missing value, etc.)
-│   ├── io/               # load/save CSV, DVC-tracked paths
+│   ├── io/               # load and validate Ames CSV inputs
 │   ├── features/         # ColumnTransformer builders (one module per block)
 │   ├── pipelines/        # compose features + regressor into a Pipeline
 │   ├── models/           # baseline + XGBoost wrappers

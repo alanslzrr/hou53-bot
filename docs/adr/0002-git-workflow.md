@@ -83,8 +83,8 @@ branches short enough that conflicts stay tractable, and plugs directly into
 | `ci` | CI configuration |
 | `chore` | Miscellaneous (lint config, tool setup) |
 | `revert` | Revert a previous commit |
-| `data` | Dataset change (DVC-tracked) |
-| `model` | Model artifact change (DVC-tracked) |
+| `data` | Dataset change |
+| `model` | Model artifact change |
 
 ## Links
 

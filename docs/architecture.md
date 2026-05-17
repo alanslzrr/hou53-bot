@@ -25,7 +25,6 @@ flowchart LR
     end
 
     subgraph ML[Offline · ml/]
-      DVC[(DVC remote:<br/>data + models)]
       MLflow[(MLflow runs)]
       TRAIN[Training pipeline]
     end
@@ -50,7 +49,6 @@ flowchart LR
     R --> S --> D
     S --> I
     I -- load once at startup --> MODEL[hou53-pipeline.joblib]
-    MODEL -.artifact.-> DVC
     TRAIN -- logs --> MLflow
     TRAIN -- produces --> MODEL
     AUTH <--> USERS
@@ -70,7 +68,7 @@ flowchart LR
 | User data (auth, history) | `apps/web` via Drizzle → Neon | Auth is a frontend concern; the Python API stays stateless |
 | Training | `ml/` | Offline, not deployed |
 | Experiment metadata | MLflow (local file backend) | Lives in `mlruns/`, gitignored |
-| Data and model artifacts | DVC remote | Binary blobs, content-hashed |
+| Data and model artifacts | Git repository | Small challenge dataset and production model files |
 
 ## Data flow for a single prediction
 
@@ -94,10 +92,8 @@ flowchart LR
   `hou53_ml` define the schema; FastAPI derives OpenAPI from them;
   `openapi-zod-client` generates the web-side zod schema at build time.
   Any drift breaks the build.
-- **Reproducibility from a commit.** Git pins code, dependencies, and the
-  small challenge source dataset; DVC pins model artifacts via `.dvc`
-  files. `dvc pull` returns the exact model binaries once the environment
-  has a configured remote.
+- **Reproducibility from a commit.** Git pins code, dependencies, the
+  small challenge source dataset, and the production model artifact.
 - **Observability from day one.** Structured logs, request IDs, and a
   prediction-latency histogram ship with the API. We would rather have
   noisy logs early than scramble to add them under incident pressure.

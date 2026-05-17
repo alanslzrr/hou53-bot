@@ -43,8 +43,7 @@ would force contributors to reason about it as a service.
 - `apps/api` and `apps/web` each have a single, obvious Dockerfile.
 - `ml/` is a standalone installable Python package (`hou53-ml`) that the API
   can import for the preprocessing schema without importing training code.
-- `data/` and `models/` as siblings signal that they are assets, not source —
-  reinforced by DVC tracking (see ADR-0004).
+- `data/` and `models/` as siblings signal that they are assets, not source.
 - `docs/` at root is discoverable; ADRs do not get buried inside a service.
 
 ### Negative Consequences / Trade-offs
@@ -81,6 +80,6 @@ would force contributors to reason about it as a service.
 
 ## Links
 
-- [ADR-0004 — DVC](./0004-data-versioning-dvc.md)
+- [ADR-0004 — small artifacts in Git](./0004-small-artifacts-in-git.md)
 - [ADR-0008 — FastAPI](./0008-api-framework-fastapi.md)
 - [ADR-0009 — Frontend stack](./0009-frontend-stack.md)
