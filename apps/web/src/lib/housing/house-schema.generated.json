@@ -1,0 +1,776 @@
+{
+  "version": 1,
+  "source": "app.api.dtos.HousePredictionRequest",
+  "feature_count": 79,
+  "quality_levels": [
+    "NA",
+    "Po",
+    "Fa",
+    "TA",
+    "Gd",
+    "Ex"
+  ],
+  "features": [
+    {
+      "name": "LotFrontage",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "LotArea",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "MasVnrArea",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BsmtFinSF1",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BsmtFinSF2",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BsmtUnfSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "TotalBsmtSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "1stFlrSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "2ndFlrSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "LowQualFinSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "GrLivArea",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BsmtFullBath",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BsmtHalfBath",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "FullBath",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "HalfBath",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BedroomAbvGr",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "KitchenAbvGr",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "TotRmsAbvGrd",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Fireplaces",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "GarageCars",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "GarageArea",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "WoodDeckSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "OpenPorchSF",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "EnclosedPorch",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "3SsnPorch",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "ScreenPorch",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "PoolArea",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "MiscVal",
+      "kind": "numeric",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "YearBuilt",
+      "kind": "temporal",
+      "type": "integer",
+      "minimum": 1800.0,
+      "maximum": 2100.0,
+      "enum": null
+    },
+    {
+      "name": "YearRemodAdd",
+      "kind": "temporal",
+      "type": "integer",
+      "minimum": 1800.0,
+      "maximum": 2100.0,
+      "enum": null
+    },
+    {
+      "name": "GarageYrBlt",
+      "kind": "temporal",
+      "type": "integer",
+      "minimum": 1800.0,
+      "maximum": 2100.0,
+      "enum": null
+    },
+    {
+      "name": "ExterQual",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "ExterCond",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "BsmtQual",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "BsmtCond",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "HeatingQC",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "KitchenQual",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "FireplaceQu",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "GarageQual",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "GarageCond",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "PoolQC",
+      "kind": "quality_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ]
+    },
+    {
+      "name": "LotShape",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "IR3",
+        "IR2",
+        "IR1",
+        "Reg"
+      ]
+    },
+    {
+      "name": "LandSlope",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Sev",
+        "Mod",
+        "Gtl"
+      ]
+    },
+    {
+      "name": "BsmtExposure",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "No",
+        "Mn",
+        "Av",
+        "Gd"
+      ]
+    },
+    {
+      "name": "BsmtFinType1",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Unf",
+        "LwQ",
+        "Rec",
+        "BLQ",
+        "ALQ",
+        "GLQ"
+      ]
+    },
+    {
+      "name": "BsmtFinType2",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Unf",
+        "LwQ",
+        "Rec",
+        "BLQ",
+        "ALQ",
+        "GLQ"
+      ]
+    },
+    {
+      "name": "GarageFinish",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Unf",
+        "RFn",
+        "Fin"
+      ]
+    },
+    {
+      "name": "PavedDrive",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "N",
+        "P",
+        "Y"
+      ]
+    },
+    {
+      "name": "Functional",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "Sal",
+        "Sev",
+        "Maj2",
+        "Maj1",
+        "Mod",
+        "Min2",
+        "Min1",
+        "Typ"
+      ]
+    },
+    {
+      "name": "Fence",
+      "kind": "ordered_ordinal",
+      "type": "string_enum",
+      "minimum": null,
+      "maximum": null,
+      "enum": [
+        "NA",
+        "MnWw",
+        "GdWo",
+        "MnPrv",
+        "GdPrv"
+      ]
+    },
+    {
+      "name": "OverallQual",
+      "kind": "numeric_ordinal",
+      "type": "integer",
+      "minimum": 1.0,
+      "maximum": 10.0,
+      "enum": null
+    },
+    {
+      "name": "OverallCond",
+      "kind": "numeric_ordinal",
+      "type": "integer",
+      "minimum": 1.0,
+      "maximum": 10.0,
+      "enum": null
+    },
+    {
+      "name": "MSZoning",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Street",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Alley",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "LandContour",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Utilities",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "LotConfig",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Neighborhood",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Condition1",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Condition2",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "BldgType",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "HouseStyle",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "RoofStyle",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "RoofMatl",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Exterior1st",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Exterior2nd",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "MasVnrType",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Foundation",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Heating",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "CentralAir",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "Electrical",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "GarageType",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "MiscFeature",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "SaleType",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "SaleCondition",
+      "kind": "nominal",
+      "type": "string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "MSSubClass",
+      "kind": "numeric_categorical",
+      "type": "integer_or_string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "MoSold",
+      "kind": "numeric_categorical",
+      "type": "integer_or_string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    },
+    {
+      "name": "YrSold",
+      "kind": "numeric_categorical",
+      "type": "integer_or_string",
+      "minimum": null,
+      "maximum": null,
+      "enum": null
+    }
+  ]
+}
