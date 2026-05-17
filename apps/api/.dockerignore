@@ -1,0 +1,27 @@
+# Don't ship the dev environment into the build context.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Data + models — mounted at runtime, not baked into the image.
+data/
+models/
+mlruns/
+
+# Notebooks
+ml/notebooks/*.ipynb
+
+# Frontend
+apps/web/
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.github/

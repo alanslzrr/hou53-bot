@@ -1,0 +1,50 @@
+# apps/api/ — installable Python package `hou53-api`.
+#
+# Inference service for the trained pipeline. Imports `hou53_ml` at
+# runtime so the input schema and the model artifact ARE the same code
+# that produced them — no duplicated DTOs, no risk of drift.
+#
+# Runtime deps stay minimal on purpose. shap, mlflow, dvc, jupyter etc.
+# do NOT belong here — they bloat the image and widen the attack
+# surface. Anything strictly serving-time only.
+#
+# See: docs/adr/0008-api-framework-fastapi.md
+
+[project]
+name = "hou53-api"
+version = "0.1.0"
+description = "FastAPI inference service for HOU53-bot."
+readme = "README.md"
+requires-python = ">=3.14"
+license = { text = "MIT" }
+authors = [{ name = "Alan Salazar" }]
+
+dependencies = [
+    # Web framework + ASGI server
+    "fastapi>=0.135.0",
+    "uvicorn[standard]>=0.44.0",
+    # Validation + typed settings
+    "pydantic>=2.13.0",
+    "pydantic-settings>=2.6.0",
+    # Structured logging
+    "structlog>=24.4.0",
+    # Workspace dependency: the ML package owns the pipeline + schema.
+    # The serialised joblib is loaded at startup; ``hou53_ml`` is the
+    # only place where preprocessing / model code lives.
+    "hou53-ml",
+]
+
+[project.optional-dependencies]
+test = [
+    "httpx>=0.28.0",  # FastAPI's TestClient requires httpx >= 0.23
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]
+
+[tool.uv.sources]
+hou53-ml = { workspace = true }
