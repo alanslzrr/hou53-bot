@@ -16,6 +16,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+!/apps/web/src/lib/
+!/apps/web/src/lib/**
 parts/
 sdist/
 var/
@@ -237,6 +239,7 @@ node_modules/
 .pnpm-store/
 .pnpm-debug.log
 .next/
+*.tsbuildinfo
 out/
 .turbo/
 .vercel/
