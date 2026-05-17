@@ -1,20 +1,33 @@
 # Notebooks
 
-Exploration and experiments. **Not production code.** Anything that matters
-beyond a single notebook is promoted into `ml/src/hou53_ml/` with tests.
+Exploration and experiments. Not production code. Anything reusable
+beyond a single notebook moves to `ml/src/hou53_ml/` with tests.
 
-## Rules
+## Files per notebook
 
-- **Paired with Jupytext** in light-percent format. Commit the `.py`
-  version; the `.ipynb` is regenerated.
-- Outputs are stripped by the `nbstripout` pre-commit hook.
-- Each notebook ends with a markdown cell summarizing findings and linking
-  to any code that was promoted to the package.
+Each notebook is committed as two paired files:
 
-## Creating one
+- `<NN>_<slug>.ipynb` — opened in Jupyter / VSCode / PyCharm.
+- `<NN>_<slug>.py` — Jupytext mirror in percent format. Edits to
+  either side propagate to the other when Jupytext is installed.
+
+Reason for the pair: `git diff` on `.ipynb` JSON is unreadable; the
+`.py` produces reviewable diffs. The `nbstripout` pre-commit hook
+clears `.ipynb` outputs before commit so plot images do not enter Git
+history.
+
+## Create a new notebook
 
 ```bash
-uv run jupytext --set-formats ipynb,py:light ml/notebooks/<NN>_<slug>.ipynb
+uv run jupytext --set-formats "ipynb,py:percent" ml/notebooks/<NN>_<slug>.ipynb
 ```
 
-Naming: `01_eda.ipynb`, `02_feature_engineering.ipynb`, `03_baseline.ipynb`, etc.
+Naming: `01_eda.ipynb`, `02_feature_engineering.ipynb`, etc.
+
+## Conventions
+
+- Each notebook ends with a markdown cell summarising findings and
+  linking to any code promoted into `hou53_ml`.
+- Long-lived findings move to `docs/eda/report.md` (or equivalent
+  markdown). The notebook is the scratch pad; the markdown is the
+  authority.
