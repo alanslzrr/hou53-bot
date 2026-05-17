@@ -94,8 +94,8 @@ class TestSyntheticLoader:
 class TestRealAmesCsv:
     """Smoke tests against the real ``data/raw/house_prices.csv`` if present.
 
-    These run only when the file is available locally; CI without DVC
-    will skip them. We use ``pytest.mark.integration`` so they are
+    These run only when the file is available locally. We use
+    ``pytest.mark.integration`` so they are
     visible and de-selectable.
     """
 

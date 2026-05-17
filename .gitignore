@@ -214,15 +214,8 @@ __marimo__/
 # -----------------------------------------------------------------------------
 
 # MLflow — runs are local, recoverable, and often large.
-# Best runs are archived as DVC-tracked artifacts under models/.
 /mlruns/
 /mlartifacts/
-
-# DVC — cache and temporary state; the .dvc files themselves ARE committed.
-/.dvc/cache
-/.dvc/tmp
-/.dvc/plots
-/.dvc/config.local
 
 # Derived data. The small challenge source files stay in Git for now;
 # interim/ and processed/ are regenerable — no need to track them at all.
@@ -231,11 +224,7 @@ __marimo__/
 /data/processed/*
 !/data/processed/.gitkeep
 
-# Model binaries. Only the .dvc pointer files are committed.
-/models/*
-!/models/*.dvc
-!/models/README.md
-!/models/.gitkeep
+# Model artifacts are intentionally committed: current joblib + JSON are small.
 
 # Jupyter checkpoints (always; never the notebooks themselves).
 .jupyter/

@@ -4,7 +4,7 @@
 # runtime so the input schema and the model artifact ARE the same code
 # that produced them — no duplicated DTOs, no risk of drift.
 #
-# Runtime deps stay minimal on purpose. shap, mlflow, dvc, jupyter etc.
+# Runtime deps stay minimal on purpose. shap, mlflow, jupyter etc.
 # do NOT belong here — they bloat the image and widen the attack
 # surface. Anything strictly serving-time only.
 #

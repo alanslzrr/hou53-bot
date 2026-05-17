@@ -9,12 +9,12 @@
 # the API will live in `apps/api/pyproject.toml` (added in Phase 4). This
 # root project pulls them in as workspace members so a single `uv sync`
 # from the repo root sets up the whole dev environment, and adds the
-# tooling needed across the monorepo (lint, format, type, test, DVC,
-# MLflow, pre-commit).
+# tooling needed across the monorepo (lint, format, type, test, MLflow,
+# pre-commit).
 #
 # See:
 #   - docs/adr/0001-monorepo-structure.md
-#   - docs/adr/0004-data-versioning-dvc.md
+#   - docs/adr/0004-small-artifacts-in-git.md
 #   - docs/adr/0005-experiment-tracking-mlflow.md
 
 [project]
@@ -64,10 +64,9 @@ dev = [
 ]
 
 ml-tooling = [
-    # Experiment tracking and data/model versioning. Pinned at root so
-    # `uv run mlflow ui` and `uv run dvc ...` work from anywhere.
+    # Experiment tracking and tuning. Pinned at root so
+    # `uv run mlflow ui` works from anywhere.
     "mlflow>=2.19.0",
-    "dvc[gdrive]>=3.58.0",
     "optuna>=4.1.0",
 ]
 
@@ -162,7 +161,6 @@ module = [
     "mlflow.*",
     "optuna.*",
     "sklearn.*",
-    "dvc.*",
 ]
 ignore_missing_imports = true
 

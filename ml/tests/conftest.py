@@ -12,7 +12,7 @@ from hou53_ml.config import Settings
 def settings(tmp_path: Path) -> Settings:
     """A fresh ``Settings`` instance rooted at a temporary directory.
 
-    Tests that need isolated paths (loaders, serializers, DVC-like code)
+    Tests that need isolated paths (loaders, serializers, artifact code)
     depend on this instead of reaching into the module-level singleton.
     Using dependency injection here is the main reason ``get_settings()``
     is a factory rather than a module-level global.

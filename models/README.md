@@ -1,9 +1,11 @@
-# `models/` — trained artifacts (DVC-tracked)
+# `models/` — trained artifacts
 
-Trained pipeline artifacts live here. **Never committed to Git directly** —
-tracked with DVC (see [ADR-0004](../docs/adr/0004-data-versioning-dvc.md)).
-The `.dvc` files (text, ~200 bytes each) live in Git; the binary
-`*.joblib` files live on the DVC remote and are fetched with `dvc pull`.
+Trained production artifacts live here and are committed directly to Git.
+The current model and metadata files are small enough that adding an
+external artifact store would add operational overhead without improving
+the clone-and-run workflow.
+
+See [ADR-0004](../docs/adr/0004-small-artifacts-in-git.md).
 
 ## Expected contents (Phase 3)
 
@@ -17,5 +19,6 @@ The `.dvc` files (text, ~200 bytes each) live in Git; the binary
 
 ```bash
 git clone <repo>
-dvc pull          # fetches whatever this commit's .dvc files point to
+uv sync --all-groups
+uv run uvicorn app.main:app --app-dir apps/api/src --port 8000
 ```

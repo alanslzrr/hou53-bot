@@ -20,7 +20,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
-        args: ["--maxkb=500"]
+        # The production model artifact is intentionally committed and is
+        # currently ~1.6 MB. Keep a real ceiling for accidental large files.
+        args: ["--maxkb=10000"]
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-symlinks
