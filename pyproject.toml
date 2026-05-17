@@ -31,6 +31,7 @@ authors = [{ name = "Alan Salazar" }]
 # `[dependency-groups]`, NOT here — it should not leak into runtime images.
 dependencies = [
     "hou53-ml",
+    "hou53-api",
 ]
 
 [dependency-groups]
@@ -46,9 +47,18 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest-xdist>=3.6.1",
     "hypothesis>=6.122.0",
+    # FastAPI's TestClient is built on httpx (not requests since 0.103).
+    "httpx>=0.28.0",
     # Pre-commit orchestration
     "pre-commit>=4.0.1",
-    # Notebook authoring (paired files)
+    # Notebook stack. ipykernel + pip make the venv usable as a Jupyter
+    # kernel from PyCharm / VSCode / JupyterLab (uv strips pip from the
+    # venv by default; IDEs need it for package management). jupyterlab
+    # gives a working `jupyter lab` if you don't want to use an IDE.
+    "ipykernel>=6.29.0",
+    "jupyterlab>=4.2.0",
+    "pip>=24.0",
+    # Notebook authoring tooling.
     "jupytext>=1.16.4",
     "nbstripout>=0.8.1",
 ]
@@ -67,10 +77,11 @@ ml-tooling = [
 package = false
 
 [tool.uv.workspace]
-members = ["ml"]
+members = ["ml", "apps/api"]
 
 [tool.uv.sources]
 hou53-ml = { workspace = true }
+hou53-api = { workspace = true }
 
 # -----------------------------------------------------------------------------
 # Ruff — linter + formatter. One tool, consistent across the monorepo.
@@ -112,7 +123,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S", "D", "ANN"]
+"**/tests/**" = ["S", "D", "ANN", "N803", "N806"]
+"ml/src/hou53_ml/**/*.py" = ["N803", "N806"]
 "ml/notebooks/**/*.py" = ["D", "ANN", "E501", "S"]
 
 [tool.ruff.lint.pydocstyle]
@@ -142,6 +154,9 @@ exclude = [
 
 [[tool.mypy.overrides]]
 module = [
+    "joblib",
+    "pandas",
+    "pandas.*",
     "xgboost.*",
     "shap.*",
     "mlflow.*",
@@ -150,6 +165,14 @@ module = [
     "dvc.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "hou53_ml.features.derived",
+    "hou53_ml.features.imputation",
+    "hou53_ml.features.target_encoding",
+]
+disallow_subclassing_any = false
 
 # -----------------------------------------------------------------------------
 # Pytest — discovery, coverage, markers.
@@ -163,8 +186,10 @@ addopts = [
     "--cov=ml/src",
     "--cov=apps/api/src",
     "--cov-report=term-missing",
+    "--import-mode=importlib",
 ]
 testpaths = ["ml/tests", "apps/api/tests"]
+pythonpath = ["apps/api/src"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
