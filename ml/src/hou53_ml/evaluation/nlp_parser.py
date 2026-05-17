@@ -216,11 +216,16 @@ def _post_parse(
         },
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:  # noqa: S310
-        parsed = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:  # noqa: S310
+            parsed = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        parsed = json.loads(exc.read().decode("utf-8"))
     if not isinstance(parsed, dict):
         msg = f"parser response for {example.id} is not an object"
         raise ValueError(msg)
+    if parsed.get("ok") is False:
+        return {}
     fields = parsed.get("parsed_fields", {})
     return cast(dict[str, Any], fields if isinstance(fields, dict) else {})
 

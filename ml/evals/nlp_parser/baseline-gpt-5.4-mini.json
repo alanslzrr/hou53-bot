@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.9937956204379562,
+  "attempted_fields": 2740,
+  "correct_fields": 2723,
+  "coverage": 0.28982441294690076,
+  "endpoint": "http://127.0.0.1:3000/api/parse",
+  "examples": 120,
+  "examples_path": "ml/evals/nlp_parser/examples.jsonl",
+  "min_accuracy": 0.7,
+  "model": "gpt-5.4-mini",
+  "ran_at_utc": "2026-05-17T18:17:15Z",
+  "source_fields_present": 9454,
+  "timeout_seconds": 25
+}
