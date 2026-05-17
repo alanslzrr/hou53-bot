@@ -1,6 +1,6 @@
 # ADR-0010: LLM with structured output for natural-language input
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-04-21
 - **Deciders:** Alan Salazar
 
@@ -40,11 +40,13 @@ model. The input is free-form; the output schema has 79 possible fields.
 
 ## Decision Outcome
 
-Chosen option: **LLM with structured output** (Option 3), using the
-Vercel AI SDK's `generateObject` (or equivalent). It is the only
-option that naturally handles the full field space in unconstrained
-English, produces validated JSON by construction, and scales to new
-fields without new code.
+Chosen option: **LLM with structured output** (Option 3), using AI SDK
+structured output with the direct OpenAI provider. In AI SDK v6 this is
+implemented with `generateText` + `Output.object`; older SDK docs called
+the same pattern `generateObject`. Billing and credentials are OpenAI-owned
+through `OPENAI_API_KEY`. It is the only option that naturally handles the
+full field space in unconstrained English, produces validated JSON by
+construction, and scales to new fields without new code.
 
 Options 5 and 6 are more powerful but resolve problems v1 may not
 have. Both are recorded under "Future improvements" below — when
@@ -74,8 +76,8 @@ loop says single-shot is the bottleneck.
   provider side, (c) debouncing the "parse" button so we do not fire on
   every keystroke.
 - External dependency on an LLM provider. Mitigated by the AI SDK's
-  provider abstraction — the model is a config value, not a hard
-  dependency.
+  provider abstraction — the model is a config value, but the v1 provider
+  is OpenAI direct.
 
 ### Operational guardrails
 
@@ -96,9 +98,9 @@ Patterns adopted from agent-tooling practice:
   form and asks the user to complete it.
 - **Per-user rate limit.** Middleware-level cap on parses per minute
   per authenticated user.
-- **Deterministic settings.** `temperature=0`, fixed `seed` when the
-  provider supports it. Prompt content is hashed for cache lookups
-  on the provider side.
+- **Deterministic settings.** Fixed `seed` when the provider supports it.
+  `temperature=0` is used only for models that support it; OpenAI reasoning
+  models such as `gpt-5.4-mini` reject temperature overrides.
 - **Structured request logging.** Each parse logs
   ``{ request_id, model, latency_ms, n_chars_in, n_fields_extracted,
   error? }`` so quality regressions surface in dashboards, not in
@@ -223,6 +225,6 @@ eval loop, "improvements" are guesses.
 
 ## Links
 
-- [Vercel AI SDK — `generateObject`](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-object)
+- [AI SDK — structured output](https://ai-sdk.dev/docs/ai-sdk-core/generating-structured-data)
 - [ADR-0008 — FastAPI](./0008-api-framework-fastapi.md)
 - [ADR-0009 — Frontend stack](./0009-frontend-stack.md)
