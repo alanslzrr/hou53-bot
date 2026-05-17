@@ -94,8 +94,10 @@ flowchart LR
   `hou53_ml` define the schema; FastAPI derives OpenAPI from them;
   `openapi-zod-client` generates the web-side zod schema at build time.
   Any drift breaks the build.
-- **Reproducibility from a commit.** `git checkout <sha> && dvc pull`
-  returns the exact data and model artifacts that commit saw.
+- **Reproducibility from a commit.** Git pins code, dependencies, and the
+  small challenge source dataset; DVC pins model artifacts via `.dvc`
+  files. `dvc pull` returns the exact model binaries once the environment
+  has a configured remote.
 - **Observability from day one.** Structured logs, request IDs, and a
   prediction-latency histogram ship with the API. We would rather have
   noisy logs early than scramble to add them under incident pressure.

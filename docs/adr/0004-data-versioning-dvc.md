@@ -35,6 +35,11 @@ Chosen option: **DVC with a Google Drive remote for the challenge (upgradable
 to S3 later)**, because it gives us content-hashed versioning for data *and*
 models with a CLI that feels Git-native, while staying free-tier friendly.
 
+Implementation note: the repository currently commits the small challenge
+source files directly and uses DVC for trained model artifacts. The `.dvc`
+pointers are committed with the code; a shared remote must be configured
+before `dvc pull` can hydrate model binaries on a fresh clone.
+
 ### Positive Consequences
 
 - `dvc pull` after `git clone` fetches the exact dataset + model for that
