@@ -34,6 +34,12 @@ dependencies = [
     "pydantic-settings>=2.6.0",
     # Config files (for ml/configs/*.yaml)
     "pyyaml>=6.0.2",
+    "matplotlib>=3.9.0",
+    "seaborn>=0.13.2",
+    # Used by the EDA notebook for the missing-value matrix plot
+    # (`msno.matrix`). Required at notebook-execution time. If we ever
+    # drop the call, drop this dep too.
+    "missingno>=0.5.2",
 ]
 
 [build-system]
