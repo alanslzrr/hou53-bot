@@ -20,6 +20,7 @@ type ContractFeature = {
   minimum: number | null;
   maximum: number | null;
   enum: string[] | null;
+  options?: string[] | null;
 };
 
 type HouseSchemaContract = {
@@ -86,6 +87,14 @@ const houseFieldShape = Object.fromEntries(
 export const houseFeatureNameSchema = z.enum(asNonEmptyStringTuple(HOUSE_FEATURES, "features"));
 
 export const houseFieldsSchema = z.object(houseFieldShape).strip();
+
+export const completeHouseFieldsSchema = houseFieldsSchema.refine(
+  (fields) =>
+    Object.values(fields).some(
+      (value) => value !== null && value !== undefined && value !== "",
+    ),
+  { message: "At least one house feature is required." },
+);
 
 export const looseHouseFieldsSchema = z
   .record(z.string().min(1), z.union([z.string().min(1), z.number(), z.boolean(), z.null()]))

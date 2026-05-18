@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 from app.api.dtos import HousePredictionRequest
 from hou53_ml.constants import (
     NUMERIC_BUT_CATEGORICAL,
@@ -22,6 +23,7 @@ from hou53_ml.io.schema import Schema
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 OUTPUT_PATH = REPO_ROOT / "apps/web/src/lib/housing/house-schema.generated.json"
+RAW_DATA_PATH = REPO_ROOT / "data/raw/house_prices.csv"
 
 
 def _nonnull_variants(prop: dict[str, Any]) -> list[dict[str, Any]]:
@@ -73,11 +75,29 @@ def _field_enum(column: str, kind: str) -> list[str] | None:
     return None
 
 
+def _categorical_options(
+    column: str, kind: str, raw_frame: pd.DataFrame | None
+) -> list[str] | None:
+    if kind in {"quality_ordinal", "ordered_ordinal"}:
+        return _field_enum(column, kind)
+    if (
+        kind not in {"nominal", "numeric_categorical"}
+        or raw_frame is None
+        or column not in raw_frame
+    ):
+        return None
+
+    values = raw_frame[column].dropna().astype(str).map(str.strip)
+    options = sorted(value for value in values.unique().tolist() if value)
+    return options or None
+
+
 def build_contract() -> dict[str, Any]:
     """Build a JSON-serializable contract from the Pydantic model."""
     schema = Schema.default()
     pydantic_schema = HousePredictionRequest.model_json_schema(by_alias=True)
     properties = pydantic_schema["properties"]
+    raw_frame = pd.read_csv(RAW_DATA_PATH) if RAW_DATA_PATH.exists() else None
 
     missing = [column for column in schema.all_features if column not in properties]
     if missing:
@@ -96,6 +116,7 @@ def build_contract() -> dict[str, Any]:
                 "minimum": minimum,
                 "maximum": maximum,
                 "enum": _field_enum(column, kind),
+                "options": _categorical_options(column, kind, raw_frame),
             }
         )
 

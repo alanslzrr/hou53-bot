@@ -17,7 +17,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "LotArea",
@@ -25,7 +26,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "MasVnrArea",
@@ -33,7 +35,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "BsmtFinSF1",
@@ -41,7 +44,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "BsmtFinSF2",
@@ -49,7 +53,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "BsmtUnfSF",
@@ -57,7 +62,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "TotalBsmtSF",
@@ -65,7 +71,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "1stFlrSF",
@@ -73,7 +80,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "2ndFlrSF",
@@ -81,7 +89,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "LowQualFinSF",
@@ -89,7 +98,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "GrLivArea",
@@ -97,7 +107,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "BsmtFullBath",
@@ -105,7 +116,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "BsmtHalfBath",
@@ -113,7 +125,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "FullBath",
@@ -121,7 +134,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "HalfBath",
@@ -129,7 +143,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "BedroomAbvGr",
@@ -137,7 +152,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "KitchenAbvGr",
@@ -145,7 +161,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "TotRmsAbvGrd",
@@ -153,7 +170,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "Fireplaces",
@@ -161,7 +179,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "GarageCars",
@@ -169,7 +188,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "GarageArea",
@@ -177,7 +197,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "WoodDeckSF",
@@ -185,7 +206,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "OpenPorchSF",
@@ -193,7 +215,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "EnclosedPorch",
@@ -201,7 +224,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "3SsnPorch",
@@ -209,7 +233,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "ScreenPorch",
@@ -217,7 +242,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "PoolArea",
@@ -225,7 +251,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "MiscVal",
@@ -233,7 +260,8 @@
       "type": "number",
       "minimum": 0.0,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "YearBuilt",
@@ -241,7 +269,8 @@
       "type": "integer",
       "minimum": 1800.0,
       "maximum": 2100.0,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "YearRemodAdd",
@@ -249,7 +278,8 @@
       "type": "integer",
       "minimum": 1800.0,
       "maximum": 2100.0,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "GarageYrBlt",
@@ -257,7 +287,8 @@
       "type": "integer",
       "minimum": 1800.0,
       "maximum": 2100.0,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "ExterQual",
@@ -266,6 +297,14 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ],
+      "options": [
         "NA",
         "Po",
         "Fa",
@@ -287,6 +326,14 @@
         "TA",
         "Gd",
         "Ex"
+      ],
+      "options": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
       ]
     },
     {
@@ -296,6 +343,14 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ],
+      "options": [
         "NA",
         "Po",
         "Fa",
@@ -317,6 +372,14 @@
         "TA",
         "Gd",
         "Ex"
+      ],
+      "options": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
       ]
     },
     {
@@ -326,6 +389,14 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ],
+      "options": [
         "NA",
         "Po",
         "Fa",
@@ -347,6 +418,14 @@
         "TA",
         "Gd",
         "Ex"
+      ],
+      "options": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
       ]
     },
     {
@@ -356,6 +435,14 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ],
+      "options": [
         "NA",
         "Po",
         "Fa",
@@ -377,6 +464,14 @@
         "TA",
         "Gd",
         "Ex"
+      ],
+      "options": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
       ]
     },
     {
@@ -386,6 +481,14 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
+      ],
+      "options": [
         "NA",
         "Po",
         "Fa",
@@ -407,6 +510,14 @@
         "TA",
         "Gd",
         "Ex"
+      ],
+      "options": [
+        "NA",
+        "Po",
+        "Fa",
+        "TA",
+        "Gd",
+        "Ex"
       ]
     },
     {
@@ -416,6 +527,13 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "IR3",
+        "IR2",
+        "IR1",
+        "Reg"
+      ],
+      "options": [
         "NA",
         "IR3",
         "IR2",
@@ -434,6 +552,12 @@
         "Sev",
         "Mod",
         "Gtl"
+      ],
+      "options": [
+        "NA",
+        "Sev",
+        "Mod",
+        "Gtl"
       ]
     },
     {
@@ -448,6 +572,13 @@
         "Mn",
         "Av",
         "Gd"
+      ],
+      "options": [
+        "NA",
+        "No",
+        "Mn",
+        "Av",
+        "Gd"
       ]
     },
     {
@@ -457,6 +588,15 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Unf",
+        "LwQ",
+        "Rec",
+        "BLQ",
+        "ALQ",
+        "GLQ"
+      ],
+      "options": [
         "NA",
         "Unf",
         "LwQ",
@@ -480,6 +620,15 @@
         "BLQ",
         "ALQ",
         "GLQ"
+      ],
+      "options": [
+        "NA",
+        "Unf",
+        "LwQ",
+        "Rec",
+        "BLQ",
+        "ALQ",
+        "GLQ"
       ]
     },
     {
@@ -489,6 +638,12 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Unf",
+        "RFn",
+        "Fin"
+      ],
+      "options": [
         "NA",
         "Unf",
         "RFn",
@@ -506,6 +661,12 @@
         "N",
         "P",
         "Y"
+      ],
+      "options": [
+        "NA",
+        "N",
+        "P",
+        "Y"
       ]
     },
     {
@@ -515,6 +676,17 @@
       "minimum": null,
       "maximum": null,
       "enum": [
+        "NA",
+        "Sal",
+        "Sev",
+        "Maj2",
+        "Maj1",
+        "Mod",
+        "Min2",
+        "Min1",
+        "Typ"
+      ],
+      "options": [
         "NA",
         "Sal",
         "Sev",
@@ -538,6 +710,13 @@
         "GdWo",
         "MnPrv",
         "GdPrv"
+      ],
+      "options": [
+        "NA",
+        "MnWw",
+        "GdWo",
+        "MnPrv",
+        "GdPrv"
       ]
     },
     {
@@ -546,7 +725,8 @@
       "type": "integer",
       "minimum": 1.0,
       "maximum": 10.0,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "OverallCond",
@@ -554,7 +734,8 @@
       "type": "integer",
       "minimum": 1.0,
       "maximum": 10.0,
-      "enum": null
+      "enum": null,
+      "options": null
     },
     {
       "name": "MSZoning",
@@ -562,7 +743,14 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "'C (all)'",
+        "FV",
+        "RH",
+        "RL",
+        "RM"
+      ]
     },
     {
       "name": "Street",
@@ -570,7 +758,11 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Grvl",
+        "Pave"
+      ]
     },
     {
       "name": "Alley",
@@ -578,7 +770,12 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "?",
+        "Grvl",
+        "Pave"
+      ]
     },
     {
       "name": "LandContour",
@@ -586,7 +783,13 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Bnk",
+        "HLS",
+        "Low",
+        "Lvl"
+      ]
     },
     {
       "name": "Utilities",
@@ -594,7 +797,11 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "AllPub",
+        "NoSeWa"
+      ]
     },
     {
       "name": "LotConfig",
@@ -602,7 +809,14 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Corner",
+        "CulDSac",
+        "FR2",
+        "FR3",
+        "Inside"
+      ]
     },
     {
       "name": "Neighborhood",
@@ -610,7 +824,34 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Blmngtn",
+        "Blueste",
+        "BrDale",
+        "BrkSide",
+        "ClearCr",
+        "CollgCr",
+        "Crawfor",
+        "Edwards",
+        "Gilbert",
+        "IDOTRR",
+        "MeadowV",
+        "Mitchel",
+        "NAmes",
+        "NPkVill",
+        "NWAmes",
+        "NoRidge",
+        "NridgHt",
+        "OldTown",
+        "SWISU",
+        "Sawyer",
+        "SawyerW",
+        "Somerst",
+        "StoneBr",
+        "Timber",
+        "Veenker"
+      ]
     },
     {
       "name": "Condition1",
@@ -618,7 +859,18 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Artery",
+        "Feedr",
+        "Norm",
+        "PosA",
+        "PosN",
+        "RRAe",
+        "RRAn",
+        "RRNe",
+        "RRNn"
+      ]
     },
     {
       "name": "Condition2",
@@ -626,7 +878,17 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Artery",
+        "Feedr",
+        "Norm",
+        "PosA",
+        "PosN",
+        "RRAe",
+        "RRAn",
+        "RRNn"
+      ]
     },
     {
       "name": "BldgType",
@@ -634,7 +896,14 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "1Fam",
+        "2fmCon",
+        "Duplex",
+        "Twnhs",
+        "TwnhsE"
+      ]
     },
     {
       "name": "HouseStyle",
@@ -642,7 +911,17 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "1.5Fin",
+        "1.5Unf",
+        "1Story",
+        "2.5Fin",
+        "2.5Unf",
+        "2Story",
+        "SFoyer",
+        "SLvl"
+      ]
     },
     {
       "name": "RoofStyle",
@@ -650,7 +929,15 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Flat",
+        "Gable",
+        "Gambrel",
+        "Hip",
+        "Mansard",
+        "Shed"
+      ]
     },
     {
       "name": "RoofMatl",
@@ -658,7 +945,17 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "ClyTile",
+        "CompShg",
+        "Membran",
+        "Metal",
+        "Roll",
+        "Tar&Grv",
+        "WdShake",
+        "WdShngl"
+      ]
     },
     {
       "name": "Exterior1st",
@@ -666,7 +963,24 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "'Wd Sdng'",
+        "AsbShng",
+        "AsphShn",
+        "BrkComm",
+        "BrkFace",
+        "CBlock",
+        "CemntBd",
+        "HdBoard",
+        "ImStucc",
+        "MetalSd",
+        "Plywood",
+        "Stone",
+        "Stucco",
+        "VinylSd",
+        "WdShing"
+      ]
     },
     {
       "name": "Exterior2nd",
@@ -674,7 +988,25 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "'Brk Cmn'",
+        "'Wd Sdng'",
+        "'Wd Shng'",
+        "AsbShng",
+        "AsphShn",
+        "BrkFace",
+        "CBlock",
+        "CmentBd",
+        "HdBoard",
+        "ImStucc",
+        "MetalSd",
+        "Other",
+        "Plywood",
+        "Stone",
+        "Stucco",
+        "VinylSd"
+      ]
     },
     {
       "name": "MasVnrType",
@@ -682,7 +1014,13 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "?",
+        "BrkCmn",
+        "BrkFace",
+        "Stone"
+      ]
     },
     {
       "name": "Foundation",
@@ -690,7 +1028,15 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "BrkTil",
+        "CBlock",
+        "PConc",
+        "Slab",
+        "Stone",
+        "Wood"
+      ]
     },
     {
       "name": "Heating",
@@ -698,7 +1044,15 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Floor",
+        "GasA",
+        "GasW",
+        "Grav",
+        "OthW",
+        "Wall"
+      ]
     },
     {
       "name": "CentralAir",
@@ -706,7 +1060,11 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "N",
+        "Y"
+      ]
     },
     {
       "name": "Electrical",
@@ -714,7 +1072,15 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "?",
+        "FuseA",
+        "FuseF",
+        "FuseP",
+        "Mix",
+        "SBrkr"
+      ]
     },
     {
       "name": "GarageType",
@@ -722,7 +1088,16 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "2Types",
+        "?",
+        "Attchd",
+        "Basment",
+        "BuiltIn",
+        "CarPort",
+        "Detchd"
+      ]
     },
     {
       "name": "MiscFeature",
@@ -730,7 +1105,14 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "?",
+        "Gar2",
+        "Othr",
+        "Shed",
+        "TenC"
+      ]
     },
     {
       "name": "SaleType",
@@ -738,7 +1120,18 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "COD",
+        "CWD",
+        "Con",
+        "ConLD",
+        "ConLI",
+        "ConLw",
+        "New",
+        "Oth",
+        "WD"
+      ]
     },
     {
       "name": "SaleCondition",
@@ -746,7 +1139,15 @@
       "type": "string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "Abnorml",
+        "AdjLand",
+        "Alloca",
+        "Family",
+        "Normal",
+        "Partial"
+      ]
     },
     {
       "name": "MSSubClass",
@@ -754,7 +1155,24 @@
       "type": "integer_or_string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "120",
+        "160",
+        "180",
+        "190",
+        "20",
+        "30",
+        "40",
+        "45",
+        "50",
+        "60",
+        "70",
+        "75",
+        "80",
+        "85",
+        "90"
+      ]
     },
     {
       "name": "MoSold",
@@ -762,7 +1180,21 @@
       "type": "integer_or_string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
     },
     {
       "name": "YrSold",
@@ -770,7 +1202,14 @@
       "type": "integer_or_string",
       "minimum": null,
       "maximum": null,
-      "enum": null
+      "enum": null,
+      "options": [
+        "2006",
+        "2007",
+        "2008",
+        "2009",
+        "2010"
+      ]
     }
   ]
 }
