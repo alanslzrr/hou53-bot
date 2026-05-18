@@ -14,6 +14,7 @@ flowchart LR
     subgraph Web[Next.js app · apps/web]
       UI[React UI]
       NLP[/NLP route handler/]
+      BFF[/Predict BFF route handler/]
       AUTH[/NextAuth/]
     end
 
@@ -30,7 +31,6 @@ flowchart LR
     end
 
     subgraph DB[(Neon Postgres)]
-      USERS[users]
       PRED[predictions]
       FDBK[feedback]
       MV[model_versions]
@@ -45,15 +45,15 @@ flowchart LR
     NLP -- prompt --> L
     L -- structured JSON --> NLP
     NLP -- validated features --> UI
-    UI -- POST /v1/predict --> R
+    UI -- confirmed fields --> BFF
+    BFF -- POST /v1/predict --> R
     R --> S --> D
     S --> I
     I -- load once at startup --> MODEL[hou53-pipeline.joblib]
     TRAIN -- logs --> MLflow
     TRAIN -- produces --> MODEL
-    AUTH <--> USERS
-    S --> PRED
-    UI <--> DB
+    BFF --> PRED
+    UI -- history reads --> PRED
 ```
 
 ## Service boundaries
@@ -65,7 +65,7 @@ flowchart LR
 | Validating structured features | Both sides (`zod` on web, Pydantic on API) | Defense in depth; both schemas come from a single OpenAPI source of truth |
 | Running the ML pipeline | `apps/api` | Single place where the serialized pipeline is loaded |
 | SHAP computation | `apps/api` | Needs the model and the background dataset; returning SHAP values with the prediction keeps one round trip |
-| User data (auth, history) | `apps/web` via Drizzle → Neon | Auth is a frontend concern; the Python API stays stateless |
+| User data (auth, history) | `apps/web` via Auth.js JWT + Drizzle → Neon | Auth is a frontend concern; the Python API stays stateless. Auth itself uses JWT only; Neon stores confirmed predictions |
 | Training | `ml/` | Offline, not deployed |
 | Experiment metadata | MLflow (local file backend) | Lives in `mlruns/`, gitignored |
 | Data and model artifacts | Git repository | Small challenge dataset and production model files |
@@ -73,13 +73,14 @@ flowchart LR
 ## Data flow for a single prediction
 
 1. User submits the form (or free text → LLM → form → confirms).
-2. Next.js route handler `POST /v1/predict` to the FastAPI API with the
-   validated feature payload.
-3. API service layer receives the request, loads the cached pipeline
+2. Browser posts validated features to Next.js `POST /api/predict`.
+3. Next.js route handler checks the Auth.js session, preserves an idempotency
+   key, and calls FastAPI `POST /v1/predict` internally.
+4. API service layer receives the request, loads the cached pipeline
    (loaded once at startup), runs `predict`, and asks the SHAP wrapper
    for per-feature contributions.
-4. API returns `{ prediction, confidence_interval, top_features[] }`.
-5. Next.js stores the prediction + a denormalized `model_version` in
+5. API returns `{ prediction, explanation.top_features[], model }`.
+6. Next.js stores the prediction + a denormalized `model_version` in
    Postgres, displays the result and the SHAP waterfall, and attaches it
    to the user's history.
 

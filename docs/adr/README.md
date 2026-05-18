@@ -49,3 +49,4 @@ An ADR moves through these statuses:
 | [0008](./0008-api-framework-fastapi.md) | FastAPI + Pydantic v2 for the inference service | proposed |
 | [0009](./0009-frontend-stack.md) | Next.js 15 App Router + shadcn/ui + Tailwind v4 | proposed |
 | [0010](./0010-nlp-parsing-strategy.md) | LLM with structured output for natural-language input | proposed |
+| [0011](./0011-assisted-appraisal-frontend.md) | Assisted appraisal frontend workflow | accepted |
