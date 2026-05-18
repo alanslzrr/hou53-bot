@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { auth } from "@/auth";
 import { getParserConfig } from "@/lib/nlp/config";
 import { consumeRateLimit } from "@/lib/nlp/rate-limit";
 import { parseHouseDescription } from "@/lib/nlp/parser";
@@ -15,17 +16,6 @@ const requestSchema = z.object({
 
 function requestIdFrom(request: Request): string {
   return request.headers.get("x-request-id") || crypto.randomUUID();
-}
-
-function identityFrom(request: Request): string {
-  const userId = request.headers.get("x-user-id");
-  if (userId) {
-    return `user:${userId}`;
-  }
-
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const realIp = request.headers.get("x-real-ip");
-  return `ip:${forwardedFor || realIp || "anonymous"}`;
 }
 
 function latencySince(startedAt: number): number {
@@ -63,6 +53,15 @@ export async function POST(request: Request): Promise<NextResponse> {
   const requestId = requestIdFrom(request);
   const config = getParserConfig();
   const contentLength = Number.parseInt(request.headers.get("content-length") ?? "0", 10);
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return jsonResponse(
+      errorPayload("invalid_request", "Authentication is required to parse descriptions.", requestId, latencySince(startedAt)),
+      401,
+    );
+  }
 
   if (Number.isFinite(contentLength) && contentLength > config.maxInputChars + 512) {
     return jsonResponse(
@@ -76,7 +75,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const rateLimit = consumeRateLimit(identityFrom(request), config);
+  const rateLimit = consumeRateLimit(`user:${userId}`, config);
   if (!rateLimit.allowed) {
     return jsonResponse(
       errorPayload(

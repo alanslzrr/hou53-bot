@@ -1,14 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { auth } from "@/auth";
 import { resetRateLimitForTests } from "@/lib/nlp/rate-limit";
 import { parseHouseDescription } from "@/lib/nlp/parser";
 
 import { POST } from "./route";
 
+vi.mock("@/auth", () => ({
+  auth: vi.fn(),
+}));
+
 vi.mock("@/lib/nlp/parser", () => ({
   parseHouseDescription: vi.fn(),
 }));
 
+type TestSession = { user: { id: string; email: string }; expires: string };
+const mockedAuth = vi.mocked(auth as unknown as () => Promise<TestSession | null>);
 const mockedParseHouseDescription = vi.mocked(parseHouseDescription);
 
 function jsonRequest(body: unknown, headers?: HeadersInit): Request {
@@ -28,7 +35,25 @@ describe("POST /api/parse", () => {
   beforeEach(() => {
     resetRateLimitForTests();
     mockedParseHouseDescription.mockReset();
+    mockedAuth.mockResolvedValue({
+      user: { id: "user-1", email: "user@example.com" },
+      expires: "2099-01-01T00:00:00.000Z",
+    });
     delete process.env.HOU53_NLP_RATE_LIMIT_REQUESTS;
+  });
+
+  it("rejects unauthenticated parse requests", async () => {
+    mockedAuth.mockResolvedValueOnce(null);
+
+    const response = await POST(jsonRequest({ description: "Three bedrooms." }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(payload).toMatchObject({
+      ok: false,
+      error: { code: "invalid_request" },
+    });
+    expect(mockedParseHouseDescription).not.toHaveBeenCalled();
   });
 
   it("rejects invalid request bodies before invoking the parser", async () => {
