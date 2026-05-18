@@ -1,8 +1,19 @@
-export default function HomePage() {
+import { redirect } from "next/navigation";
+import type { Route } from "next";
+
+import { auth } from "@/auth";
+import { AppShell } from "@/components/app-shell";
+import { EstimateWorkspace } from "@/features/estimate/estimate-workspace";
+
+export default async function HomePage() {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/login" as Route);
+  }
+
   return (
-    <main>
-      <h1>HOU53-bot</h1>
-      <p>NLP parser route is available at /api/parse.</p>
-    </main>
+    <AppShell userName={session.user.name || session.user.email}>
+      <EstimateWorkspace />
+    </AppShell>
   );
 }
