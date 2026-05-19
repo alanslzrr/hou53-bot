@@ -224,8 +224,35 @@ eval loop, "improvements" are guesses.
 - Deferred to a future ADR once a meaningful corpus of confirmed
   parses has accumulated in production.
 
+## Extension — readiness assistant (Phase 6)
+
+The same single-shot, structured-output, schema-validated philosophy
+extends one step beyond parsing. When a user submits a sparse form,
+the BFF calls `POST /api/estimate/readiness` instead of (or before)
+asking for a prediction. That endpoint:
+
+1. Computes a deterministic 0-100 input score with a rule-based weight
+   over six signal groups (living area, quality, age, location,
+   basement / garage, rooms / baths). Implementation:
+   [`apps/web/src/lib/readiness/scoring.ts`](../../apps/web/src/lib/readiness/scoring.ts).
+2. Picks up to five follow-up questions from a fixed candidate set
+   keyed by missing or low-confidence fields.
+3. Optionally rewrites the question labels with the same OpenAI
+   provider used for parsing (`HOU53_READINESS_LLM_ENABLED=true`,
+   `gpt-5.4-mini` by default). The LLM is constrained to preserve
+   question IDs and is **not** allowed to invent new fields. Falls
+   back to the rule-based labels on any failure.
+
+The same operational guardrails apply: deterministic settings,
+`store: false`, `strictJsonSchema: false`, fixed timeout, schema
+validation on output. The readiness assistant is therefore a
+specialised case of this ADR's pattern — rule-first, LLM as polish,
+human always in the loop — not a separate architecture. No new ADR
+needed.
+
 ## Links
 
 - [AI SDK — structured output](https://ai-sdk.dev/docs/ai-sdk-core/generating-structured-data)
 - [ADR-0008 — FastAPI](./0008-api-framework-fastapi.md)
 - [ADR-0009 — Frontend stack](./0009-frontend-stack.md)
+- [ADR-0011 — Assisted appraisal frontend](./0011-assisted-appraisal-frontend.md)

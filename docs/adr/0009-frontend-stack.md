@@ -1,6 +1,6 @@
-# ADR-0009: Next.js 15 App Router + shadcn/ui + Tailwind v4 + NextAuth
+# ADR-0009: Next.js 15 App Router + shadcn/ui + Tailwind v4 + Auth.js
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-04-21
 - **Deciders:** Alan Salazar
 
@@ -19,7 +19,8 @@ history.
   frontend and a toolchain that plays nicely with OpenAPI.
 - shadcn/ui gives us accessible, copy-in primitives without committing to a
   component-library vendor.
-- NextAuth has a Postgres adapter that fits Neon (ADR-0003) out of the box.
+- Auth.js supports a server-side CredentialsProvider/JWT flow without a DB
+  adapter. Prediction history is a separate Neon/Drizzle concern.
 
 ## Considered Options
 
@@ -31,7 +32,7 @@ history.
 ## Decision Outcome
 
 Chosen option: **Next.js 15 App Router + shadcn/ui + Tailwind v4 +
-NextAuth**, because it is the lowest-friction path to a production-quality
+Auth.js**, because it is the lowest-friction path to a production-quality
 frontend with typed data fetching, server-side auth, and a large ecosystem
 of examples we can learn from.
 
@@ -56,43 +57,34 @@ of examples we can learn from.
   moving. Mitigated by pinning the version in `package.json` and
   documenting any upgrade in an ADR.
 
-## Folder layout (planned)
+## Implemented layout
 
 ```
 apps/web/
 ├── src/
 │   ├── app/                    # App Router routes
-│   │   ├── (auth)/             # login, signup, logout
-│   │   ├── (dashboard)/
-│   │   │   ├── predict/        # form + result
-│   │   │   └── history/        # previous predictions
-│   │   └── api/                # route handlers (NLP parse, NextAuth)
+│   │   ├── api/                # parse, predict, Auth.js route handlers
+│   │   ├── history/            # previous predictions
+│   │   └── login/              # demo credentials login
 │   ├── components/
 │   │   ├── ui/                 # shadcn primitives (generated)
-│   │   └── feature/            # our composed components
+│   │   └── ai-elements/        # selected AI Elements
+│   ├── features/estimate/      # assisted appraisal workspace
 │   ├── lib/
-│   │   ├── api-client.ts       # typed FastAPI client from OpenAPI
-│   │   ├── auth.ts             # NextAuth config
-│   │   └── db.ts               # Drizzle client
-│   └── db/
-│       └── schema.ts           # Drizzle schema
+│   │   ├── housing/            # generated housing contract + zod helpers
+│   │   └── nlp/                # parser prompt/provider logic
+│   └── server/
+│       ├── db/                 # Drizzle schema/client
+│       ├── predict/            # FastAPI BFF client
+│       └── predictions/        # prediction repository
+├── drizzle/                    # Neon migrations
 └── package.json
 ```
-
-## Type generation pipeline
-
-1. FastAPI publishes OpenAPI at `/openapi.json`.
-2. `openapi-typescript` generates `src/lib/api-types.ts` on build.
-3. `openapi-zod-client` generates zod schemas for form validation.
-
-This guarantees that a breaking API change fails at `pnpm build`, not at
-runtime.
 
 ## Accessibility baseline
 
 - WCAG 2.1 AA minimum. shadcn/ui is built on Radix — accessible by default.
 - All forms keyboard-navigable, all interactive elements reachable.
-- Verified in CI via `axe-core` Playwright tests on the happy path.
 
 ## Links
 

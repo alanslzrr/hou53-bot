@@ -1,92 +1,77 @@
-# ADR-0003: Neon (serverless Postgres) for application data
+# ADR-0003: Neon (serverless Postgres) for prediction history
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-04-21
 - **Deciders:** Alan Salazar
 
 ## Context and Problem Statement
 
-The application stores users, prediction history, feedback, and model-version
-metadata. The frontend is Next.js + NextAuth; the backend is Python + FastAPI.
-We need a database that both stacks can reach without glue code and that does
-not force us to adopt an auth or ORM layer we have already replaced.
+Phase 6 stores confirmed predictions so authenticated users can inspect their
+valuation history. Auth.js uses CredentialsProvider with JWT sessions, so the
+database is not responsible for users, accounts, or sessions.
+
+The implemented database scope is intentionally small: one Neon Postgres table,
+`predictions`, accessed by the Next.js BFF through Drizzle. FastAPI remains
+stateless and does not write user data.
 
 ## Decision Drivers
 
-- The entities are inherently relational (users ↔ predictions ↔ model versions
-  ↔ feedback). SQL models this cleanly; documents do not.
-- We already chose NextAuth (ADR-0009) — any database with a proprietary auth
-  layer is money spent on a feature we will not use.
-- FastAPI must write to the DB directly from Python. A mature driver
-  (`asyncpg`) is non-negotiable.
-- The challenge is evaluated on how it resembles production. Per-PR database
-  branching is a meaningful step up in DX.
-- We may later add a vector column for embedding the natural-language input
-  (ADR-0010) — `pgvector` should be one SQL statement away.
+- Prediction history needs durable relational storage with simple indexing by
+  `user_id` and `created_at`.
+- The app already runs mutations through Next.js route handlers, so Drizzle can
+  own persistence without coupling FastAPI to auth.
+- We do not need a managed auth product or Auth.js database adapter in v1.
+- Neon gives serverless Postgres, a good Vercel fit, and a low-friction free
+  development setup.
 
 ## Considered Options
 
-1. **Neon** — serverless Postgres with DB branching, pgvector, native Vercel
-   integration, NextAuth Postgres adapter.
-2. **Supabase** — Postgres + Auth + Storage + Realtime as a bundled BaaS.
-3. **Convex** — TS-native reactive document database.
+1. **Neon**: serverless Postgres with DB branching, native Vercel integration,
+   and Drizzle support.
+2. **Supabase**: Postgres plus Auth, Storage, and Realtime as a bundled BaaS.
+3. **Convex**: TS-native reactive document database.
 
 ## Decision Outcome
 
-Chosen option: **Neon**, because it aligns with every decision driver without
-forcing us to adopt or pay for features we have already solved elsewhere.
+Chosen option: **Neon**.
 
-### Positive Consequences
+Configured schema:
 
-- NextAuth's `@auth/pg-adapter` works out of the box — zero glue code for
-  session persistence.
-- FastAPI talks to the DB via `asyncpg` / SQLAlchemy 2.0 — the most mature,
-  best-documented Python ↔ Postgres combination.
-- Per-PR database branching enables meaningful preview environments.
-- `pgvector` available as `CREATE EXTENSION` for the NLP feature.
-- Standard Postgres — zero vendor lock-in; a `pg_dump` gets us off Neon in
-  an afternoon if we ever need to.
+```text
+predictions
+  id
+  user_id
+  input_jsonb
+  input_source
+  parse_metadata_jsonb
+  predicted_price_usd_cents
+  model_version
+  api_request_id
+  result_jsonb
+  shap_jsonb
+  idempotency_key
+  created_at
+```
 
-### Negative Consequences / Trade-offs
+Indexes:
 
-- Cold starts on free tier (~1–3 s). Mitigated by the fact that the first
-  query on a user session is not latency-critical; hot path is the model
-  inference.
-- Connection pooling for serverless requires the pooled endpoint, not the
-  direct one. Documented in the API's README and enforced via env var
-  validation.
+```text
+predictions_user_created_idx       (user_id, created_at desc)
+predictions_user_idempotency_idx   unique (user_id, idempotency_key)
+```
 
-## Pros and Cons of the Options
+The Drizzle migration has been applied successfully against the configured
+Neon database.
 
-### Neon
+## Consequences
 
-- Good, because it is plain Postgres — every Python and TS library "just
-  works".
-- Good, because of DB branching per PR.
-- Good, because of native Vercel integration.
-- Bad, because of cold starts on the free tier.
-
-### Supabase
-
-- Good, because it is also Postgres underneath.
-- Good, because of generous free tier.
-- Bad, because its Auth product duplicates NextAuth — we would be paying
-  (in complexity, not dollars) for unused features.
-- Bad, because Supabase-flavored tooling (Edge Functions, Supabase CLI)
-  accretes vendor lock-in if used; ignoring it wastes the product.
-
-### Convex
-
-- Good, because the TS DX is excellent for reactive UIs.
-- Bad, because there is no first-class Python driver — FastAPI would have to
-  talk to Convex over HTTP, which defeats the purpose.
-- Bad, because it pushes domain logic into Convex functions (TS), splitting
-  the business logic across two languages for no gain.
-- Bad, because the data model is document-oriented; our schema is relational.
+- Prediction history survives restarts and is filtered by authenticated user.
+- Auth remains simple: JWT sessions, no auth tables, no adapter migrations.
+- FastAPI stays focused on model inference and SHAP.
+- Standard Postgres keeps the persistence layer portable.
+- Serverless database access requires `DATABASE_URL` in `apps/web/.env`.
 
 ## Links
 
-- [Neon docs](https://neon.com/docs/introduction)
-- [NextAuth.js Postgres adapter](https://authjs.dev/reference/adapter/pg)
-- [ADR-0009 — Frontend stack](./0009-frontend-stack.md)
-- [ADR-0010 — NLP parsing strategy](./0010-nlp-parsing-strategy.md)
+- [ADR-0009 - Frontend stack](./0009-frontend-stack.md)
+- [ADR-0011 - Assisted appraisal frontend workflow](./0011-assisted-appraisal-frontend.md)

@@ -5,17 +5,7 @@ project. Each ADR captures **one** architecturally significant decision, the
 context that drove it, the alternatives that were considered, and the
 consequences of choosing it.
 
-We use the [MADR 4.0](https://adr.github.io/madr/) template. It is short,
-opinionated, and machine-readable.
-
-## Why ADRs
-
-- **Traceability.** Six months from now, nobody remembers why Neon was picked
-  over Supabase. The ADR answers that without spelunking through Slack.
-- **Review artifact.** A PR that introduces a new library, framework, or
-  pattern without a linked ADR is incomplete.
-- **Onboarding.** New contributors read the ADRs in order and understand
-  the shape of the system before opening a single source file.
+Format: [MADR 4.0](https://adr.github.io/madr/).
 
 ## Lifecycle
 
@@ -41,12 +31,13 @@ An ADR moves through these statuses:
 |---|---|---|
 | [0001](./0001-monorepo-structure.md) | Monorepo structure with `apps/`, `ml/`, `data/`, `docs/` | proposed |
 | [0002](./0002-git-workflow.md) | Trunk-based development with Conventional Commits | proposed |
-| [0003](./0003-database-choice.md) | Neon (serverless Postgres) for application data | proposed |
+| [0003](./0003-database-choice.md) | Neon (serverless Postgres) for prediction history | accepted |
 | [0004](./0004-small-artifacts-in-git.md) | Keep small challenge data and model artifacts in Git | proposed |
 | [0005](./0005-experiment-tracking-mlflow.md) | MLflow (local tracking) for experiment metadata | proposed |
 | [0006](./0006-model-selection-xgboost.md) | XGBoost as the production regressor | proposed |
 | [0007](./0007-evaluation-metric-rmse-log.md) | RMSE on `log1p(SalePrice)` as the primary metric | proposed |
 | [0008](./0008-api-framework-fastapi.md) | FastAPI + Pydantic v2 for the inference service | proposed |
-| [0009](./0009-frontend-stack.md) | Next.js 15 App Router + shadcn/ui + Tailwind v4 | proposed |
+| [0009](./0009-frontend-stack.md) | Next.js 15 App Router + shadcn/ui + Tailwind v4 + Auth.js | accepted |
 | [0010](./0010-nlp-parsing-strategy.md) | LLM with structured output for natural-language input | proposed |
 | [0011](./0011-assisted-appraisal-frontend.md) | Assisted appraisal frontend workflow | accepted |
+| [0012](./0012-deployment-on-google-cloud-run.md) | Deployment on Google Cloud Run | accepted |

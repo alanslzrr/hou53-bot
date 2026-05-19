@@ -25,16 +25,22 @@ suggestions, workflow status, and loading shimmer. The core product state is not
 
 Authentication is mandatory for the web app. Auth.js uses CredentialsProvider
 with JWT sessions and one demo user configured by environment variables. Auth
-does not use a database adapter. Neon/Drizzle is used only for prediction
-history.
+does not use a database adapter. Neon/Drizzle is configured only for confirmed
+prediction history through the `predictions` table.
 
 The browser never calls FastAPI directly. Next.js owns the `/api/predict` BFF:
 it validates payloads, reads the Auth.js session, calls FastAPI internally,
 stores confirmed predictions, and returns a normalized response.
 
+Sparse inputs are handled by a readiness assistant rather than a hard block.
+The app computes a deterministic readiness score, asks up to five targeted
+follow-up questions, and still allows prediction with sparse input.
+
 ## Consequences
 
 - The user always confirms parsed fields before prediction.
+- Sparse predictions remain possible, but the UI guides the user toward
+  higher-signal fields first.
 - SHAP from FastAPI remains the only price explanation.
 - No chat persistence is needed; only confirmed predictions are stored.
 - FastAPI stays stateless with respect to users and auth.
