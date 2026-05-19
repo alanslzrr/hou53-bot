@@ -1,202 +1,130 @@
 # SOLUTION.md
 
-> This file is the single entry point for the reviewer. It describes what
-> this submission is, how to run it, the decisions behind it, and what is
-> not yet implemented.
+This is the submission for the NTT Data Ames Housing challenge. I built
+it as an end-to-end product: a scikit-learn pipeline serialised into a
+single XGBoost artifact, a FastAPI service that loads it with SHAP
+attribution wired in, and a Next.js app where the user describes a
+property in natural language, reviews the parsed fields, confirms, and
+gets a price plus an explanation. Both services run on Google Cloud
+Run. Confirmed predictions live per-user in Neon Postgres.
 
-## What this is
+## Build and run
 
-HOU53-bot is an end-to-end house-price prediction system for the Ames
-Housing dataset. It consists of:
-
-- A reproducible ML pipeline (preprocessing + XGBoost regressor) trained
-  with scikit-learn and tracked with MLflow.
-- A FastAPI inference service that exposes the trained pipeline behind a
-  typed HTTP API and returns per-prediction SHAP explanations.
-- A Next.js web application that lets a user describe a property in
-  structured form **or** in natural language, see the predicted price, and
-  inspect the factors that drove the prediction.
-- A `docker-compose` that starts the whole system with one command.
-
-## Repository layout
-
-```
-.
-├── apps/
-│   ├── api/        FastAPI inference service (Docker-deployed)
-│   └── web/        Next.js frontend (Docker-deployed)
-├── ml/             Offline ML code (training, features, evaluation)
-│   ├── notebooks/  EDA and experiments (Jupytext-paired)
-│   ├── src/hou53_ml/
-│   ├── configs/
-│   └── tests/
-├── data/           Source dataset + generated data directories
-├── models/         Committed production model artifact + metadata
-├── docs/
-│   ├── adr/        Architecture Decision Records (MADR)
-│   ├── eda/        Exported EDA report
-│   ├── architecture.md
-│   └── model-card.md
-├── docker-compose.yml
-└── SOLUTION.md     (this file)
-```
-
-## How to run it
-
-> _To be completed in Phase 7. Target command is `docker compose up`._
+### Local development
 
 ```bash
-# Placeholder — will be finalized once the API image is stable.
-docker compose up --build
+brew install libomp                                    # macOS only, for XGBoost
+uv sync --all-groups                                   # ml + api + tooling
+pnpm install                                           # apps/web
+cp apps/web/.env.example apps/web/.env                 # fill values
+
+uv run pytest                                          # backend test suite
+pnpm --dir apps/web test                               # frontend test suite
+
+uv run uvicorn app.main:app --reload --port 8000       # FastAPI on :8000
+pnpm --dir apps/web dev                                # Next.js on :3000
 ```
 
-- Web: http://localhost:3000
-- API: http://localhost:8000 (Swagger at `/docs`)
-- MLflow UI (optional): http://localhost:5000
+The full dev workflow (pre-commit, Jupyter kernel registration, the
+EDA notebook) is documented in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
-## Local development
+### Production (Google Cloud Run)
 
 ```bash
-# One-time system dep for XGBoost on macOS
-brew install libomp
+gcloud builds submit \
+  --config=.gcp/cloudbuild-api.yaml \
+  --substitutions=_IMAGE=<region>-docker.pkg.dev/<project>/hou53/api:latest
 
-# Python (ml + api + dev tooling + jupyter stack)
-uv sync --all-groups
+gcloud builds submit \
+  --config=.gcp/cloudbuild-web.yaml \
+  --substitutions=_IMAGE=<region>-docker.pkg.dev/<project>/hou53/web:latest
 
-# Register the Jupyter kernel for IDE notebook support (one-time).
-uv run python -m ipykernel install --user --name hou53-bot \
-    --display-name "HOU53-bot (.venv)"
-
-# Verify everything runs.
-uv run pytest                                          # 108 tests, ~3s
-uv run jupyter nbconvert --to notebook --execute \
-    --inplace ml/notebooks/01_eda.ipynb                # exec notebook headless
-uv run python -m hou53_ml.training.train               # XGBoost + Ridge baseline
-uv run uvicorn app.main:app --reload --port 8000       # API at :8000, /docs
-
-# Optional
-uv run mlflow ui --backend-store-uri ./mlruns          # browse experiment runs
-uv run jupyter lab                                     # JupyterLab on :8888
-
-# Try the API
-curl http://localhost:8000/healthz
-curl -X POST http://localhost:8000/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{"OverallQual":7,"GrLivArea":1800,"GarageCars":2,"YearBuilt":2000}'
-
-# Web (Phase 6)
-cd apps/web
-pnpm install
-pnpm dev
+gcloud run deploy hou53-api --image=<...> --region=<...>
+gcloud run deploy hou53-web --image=<...> --region=<...>
 ```
+
+Image details: [`apps/api/Dockerfile.gcp`](./apps/api/Dockerfile.gcp)
+(model artifact and dataset baked in) and
+[`apps/web/Dockerfile.gcp`](./apps/web/Dockerfile.gcp). Required env
+vars: [`apps/web/.env.example`](./apps/web/.env.example). The web
+service mints Google ID tokens to call the API, so reviewers don't
+need an API key to hit the deployed stack — only valid demo
+credentials.
 
 ## Technical decisions
 
-Every non-trivial decision is captured as an ADR under
-[`docs/adr/`](./docs/adr/README.md). The highlights:
+Decisions live as ADRs under [`docs/adr/`](./docs/adr/README.md). Each
+one has the context, the alternatives I considered, and the trade-offs.
 
-| Area | Decision | ADR |
+| Area | Summary | ADR |
 |---|---|---|
-| Repo layout | `apps/` + `ml/` + `data/` + `docs/` | [0001](./docs/adr/0001-monorepo-structure.md) |
-| Git | Trunk-based + Conventional Commits | [0002](./docs/adr/0002-git-workflow.md) |
-| Database | Neon (serverless Postgres) | [0003](./docs/adr/0003-database-choice.md) |
-| Data & model artifacts | Small files committed directly to Git | [0004](./docs/adr/0004-small-artifacts-in-git.md) |
-| Experiment tracking | MLflow, local file backend | [0005](./docs/adr/0005-experiment-tracking-mlflow.md) |
-| Regressor | XGBoost (Ridge baseline) | [0006](./docs/adr/0006-model-selection-xgboost.md) |
-| Metric | RMSE on `log1p(SalePrice)` | [0007](./docs/adr/0007-evaluation-metric-rmse-log.md) |
-| API | FastAPI + Pydantic v2 | [0008](./docs/adr/0008-api-framework-fastapi.md) |
-| Frontend | Next.js 15 + shadcn/ui + Tailwind v4 + NextAuth | [0009](./docs/adr/0009-frontend-stack.md) |
-| NLP parsing | LLM with structured output | [0010](./docs/adr/0010-nlp-parsing-strategy.md) |
+| Monorepo layout | Offline ML separate from deployable services | [0001](./docs/adr/0001-monorepo-structure.md) |
+| Git workflow | Squash-merge to `main`; Conventional Commits | [0002](./docs/adr/0002-git-workflow.md) |
+| Database (Neon, predictions only) | JWT auth means no Auth.js adapter tables | [0003](./docs/adr/0003-database-choice.md) |
+| Artifact versioning (in Git, no DVC) | 2 MB of binaries; DVC overkill | [0004](./docs/adr/0004-small-artifacts-in-git.md) |
+| Experiment tracking (MLflow) | Local file backend; offline-reproducible | [0005](./docs/adr/0005-experiment-tracking-mlflow.md) |
+| Regressor (XGBoost + Ridge baseline) | Ridge as sanity floor; XGBoost ships | [0006](./docs/adr/0006-model-selection-xgboost.md) |
+| Primary metric (RMSE on `log1p`) | Matches Kaggle leaderboard; `TransformedTargetRegressor` wrap | [0007](./docs/adr/0007-evaluation-metric-rmse-log.md) |
+| API (FastAPI + Pydantic v2) | Clean Architecture; schema generated from Python | [0008](./docs/adr/0008-api-framework-fastapi.md) |
+| Frontend stack (Next.js + shadcn + Auth.js) | App Router, Tailwind v4, JWT sessions | [0009](./docs/adr/0009-frontend-stack.md) |
+| NLP parsing (structured-output LLM) | Single-shot; user confirms before predict | [0010](./docs/adr/0010-nlp-parsing-strategy.md) |
+| Assisted appraisal workflow (not chat) | Reducer-driven; readiness assistant for sparse input | [0011](./docs/adr/0011-assisted-appraisal-frontend.md) |
+| Deployment on Google Cloud Run | Two services; Google ID-token service auth | [0012](./docs/adr/0012-deployment-on-google-cloud-run.md) |
 
-## What is implemented (so far)
+Context that doesn't fit a single ADR:
 
-- [x] **Phase 0** — monorepo skeleton, 10 ADRs, pre-commit, GitHub
-      templates, workspace `pyproject.toml`, installable `hou53-ml`
-      package.
-- [x] **Phase 1 — EDA**
-  - Tested helpers in `hou53_ml.eda.summary`
-    (missing summary, target distribution, skew, correlations,
-    cardinality, outlier mask).
-  - Jupytext-paired notebook
-    [`ml/notebooks/01_eda.py`](./ml/notebooks/01_eda.py).
-  - Findings consolidated in
-    [`docs/eda/report.md`](./docs/eda/report.md) — drives every
-    Phase-2 preprocessing decision.
-- [x] **Phase 2 — ML pipeline** (XGBoost artifact persisted)
-  - `hou53_ml.features` — feature-aware imputation, structural derived
-    features, fold-safe target encoding, ordinal encoders, and composable
-    `ColumnTransformer`.
-  - `hou53_ml.models` — Ridge baseline + XGBoost factory (lazy import).
-  - `hou53_ml.pipelines` — full `TransformedTargetRegressor` pipeline.
-  - `hou53_ml.evaluation` — RMSE-log / MAE / R² / median-APE +
-    K-fold CV report.
-  - `hou53_ml.serialization` — `ModelArtifact` (joblib +
-    JSON metadata sidecar with dataset hash, library versions,
-    metrics, schema fingerprint).
-  - `hou53_ml.training` — stratified train/test split with outlier
-    filtering + CLI entry point with MLflow logging.
-  - `hou53_ml.explainability` — SHAP `TreeExplainer` wrapper that
-    produces structured contributions + a plain-English sentence.
+- [`docs/architecture.md`](./docs/architecture.md) — runtime diagram,
+  sequence diagram, ER schema, ownership boundaries.
+- [`docs/model-card.md`](./docs/model-card.md) — model details,
+  metrics, ethical notes.
+- [`docs/eda/report.md`](./docs/eda/report.md) — EDA findings driving
+  preprocessing.
+- [`CHANGELOG.md`](./CHANGELOG.md) — per-phase change history.
 
-  Headline metrics (current XGBoost artifact, with Ridge as baseline):
+## Aspects not implemented
 
-  |  | Ridge (baseline) | **XGBoost (production)** |
-  |---|---:|---:|
-  | CV RMSE-log | 0.1203 ± 0.0091 | **0.1167 ± 0.0074** |
-  | Test RMSE-log | **0.1243** | 0.1249 |
-  | Test MAE | $13,432 | **$12,791** |
-  | Test R² (USD) | 0.920 | **0.927** |
-  | Test median APE | **5.63 %** | 5.79 % |
-
-  Full discussion in [`docs/model-card.md`](./docs/model-card.md).
-  SHAP explanations verified end-to-end on the saved artifact.
-
-- [x] **Phase 4 — FastAPI inference service** (`apps/api/`)
-  - Clean Architecture layout: `api → services → domain` + `infra`
-    behind protocols.
-  - 4 endpoints: `GET /healthz`, `GET /readyz`,
-    `GET /v1/model/info`, `POST /v1/predict`.
-  - Pydantic v2 input model **generated dynamically from
-    `hou53_ml.io.Schema`** — single source of truth for the 79
-    feature contract; aliases for columns starting with digits
-    (`1stFlrSF`, `2ndFlrSF`, `3SsnPorch`).
-  - Range / literal validation (years 1800–2100, OverallQual 1–10,
-    quality scale `Ex/Gd/TA/Fa/Po/NA`) with structured 422 responses.
-  - Model + SHAP explainer loaded once in the FastAPI lifespan;
-    every request is sub-100 ms on the persisted XGBoost.
-  - `structlog` JSON logs with per-request `x-request-id`
-    propagation; CORS middleware preconfigured.
-  - Multi-stage `uv`-based Dockerfile (Debian slim, libgomp1 for
-    XGBoost), non-root user, healthcheck wired.
-  - 14 API tests (stub model + real-artifact end-to-end), all green.
-    **Combined repo test count: 108 tests in 3.4 s.**
-
-  Live smoke against the persisted artifact:
-
-  ```http
-  POST /v1/predict
-  → prediction: $114,903  (baseline $160,495)
-    SHAP top: QualTotalSF −$22,260, Functional −$12,526,
-              TotalSF −$10,980, QualArea +$8,998, OverallQual +$4,744
-  ```
-
-## What is not yet implemented
-
-- [ ] **NLP parser** (Phase 5)
-- [ ] **Next.js frontend** (Phase 6)
-- [ ] **docker-compose end-to-end** (Phase 7)
-- [ ] **CI/CD, observability** (Phase 8)
+- **NLP parser accuracy measured against the live OpenAI API.** The
+  harness and dataset are in
+  [`ml/src/hou53_ml/evaluation/nlp_parser.py`](./ml/src/hou53_ml/evaluation/nlp_parser.py)
+  and [`ml/evals/nlp_parser/`](./ml/evals/nlp_parser/); no number
+  produced.
+- **GitHub Actions.** None configured.
+- **Sentry, distributed tracing, and alerts.** Cloud Logging is the
+  only observability layer.
+- **Multi-model blending and Optuna hyperparameter search.** Single
+  XGBoost artifact only. See
+  [`docs/model-card.md`](./docs/model-card.md) for the rationale and
+  the explicit future-improvements list.
+- **Retrieval-augmented few-shot for the NLP parser.** Option 6 in
+  [ADR-0010](./docs/adr/0010-nlp-parsing-strategy.md).
+- **Multi-turn agent for the NLP parser.** Option 5 in
+  [ADR-0010](./docs/adr/0010-nlp-parsing-strategy.md).
 
 ## Other considerations
 
-- **Reproducibility.** Every commit on `main` pins: Python version
-  (`.python-version`), Python dependencies (`uv.lock`), Node dependencies
-  (committed lockfile), source dataset, and production model artifact.
-- **Explainability.** The API returns top-contributing features (via SHAP
-  `TreeExplainer`) with every prediction. The frontend renders them as a
-  waterfall chart with a natural-language summary.
-- **Input resilience.** The API validates inputs against a Pydantic schema
-  generated from the training `ColumnTransformer` — any field missing or
-  out of domain is rejected with a specific error.
-- **Privacy.** User inputs are persisted only for authenticated users and
-  only to power their own history. No PII beyond the auth email.
+- **Reproducibility from any commit.** Python (`uv.lock`), Node
+  (`pnpm-lock.yaml`), the source CSV, and the production artifact are
+  all in Git. `git clone` + `uv sync --all-groups` + `pnpm install`
+  lands a reviewer on the exact bytes that produced the deployed
+  model.
+- **One schema, three consumers.** The 79-field house contract is
+  defined once in `hou53_ml.io.Schema` and generates the FastAPI
+  Pydantic input, the web's zod schema, and the NLP parser's
+  structured-output schema. Drift breaks `pnpm build`, not
+  production.
+- **Determinism boundary.** The model and SHAP attribution are
+  deterministic. The NLP parser is the only non-deterministic piece
+  in the system, and it always hands control back to the form for
+  human confirmation before any prediction is requested. Guardrails
+  are in [ADR-0010](./docs/adr/0010-nlp-parsing-strategy.md).
+- **Idempotency.** The BFF requires an `idempotency_key` per
+  prediction; a retry returns the original row instead of burning a
+  new model call. Enforced at the database with
+  `UNIQUE(user_id, idempotency_key)` + `ON CONFLICT DO NOTHING`.
+- **Sparse-input handling.** The readiness assistant scores the input
+  deterministically and surfaces up to five targeted follow-up
+  questions (rule-based, optionally LLM-rewritten) instead of
+  blocking the prediction. The user always gets to proceed.
+- **Privacy posture.** Auth via Auth.js Credentials/JWT (demo user
+  via env). Predictions are filtered by `user_id`; nothing is shared
+  across users. The browser never reaches FastAPI directly.
