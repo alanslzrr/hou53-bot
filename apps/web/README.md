@@ -19,6 +19,7 @@ direct OpenAI provider · zod.
 | `/history` | Saved predictions for the signed-in user |
 | `/history/[id]` | Prediction detail |
 | `POST /api/parse` | Authenticated NLP parser route |
+| `POST /api/estimate/readiness` | Authenticated input-signal assessment + helper questions |
 | `POST /api/predict` | Authenticated BFF route to FastAPI + Neon |
 
 ## NLP parser
@@ -28,20 +29,6 @@ direct OpenAI provider · zod.
 ```json
 { "description": "A 3-bedroom house in Ames, 1,800 sqft, built in 1995." }
 ```
-
-and returns either parsed fields for user confirmation:
-
-```json
-{
-  "ok": true,
-  "parsed_fields": { "BedroomAbvGr": 3, "GrLivArea": 1800, "YearBuilt": 1995 },
-  "guessed_fields": [],
-  "missing_fields": [],
-  "needs_confirmation": true
-}
-```
-
-or a structured error with `partial_fields` for manual entry fallback.
 
 The route uses `ai` structured output (`generateText` + `Output.object`)
 with `@ai-sdk/openai` and `OPENAI_API_KEY`. Guardrails: server-only
@@ -64,20 +51,26 @@ pnpm --dir apps/web db:migrate
 Set `OPENAI_API_KEY` locally or in the deployment environment.
 The parser default is `gpt-5.4-mini`. Temperature is intentionally omitted
 because OpenAI reasoning models do not support it.
-The default timeout is 15 seconds; local smoke tests with `gpt-5.4-mini`
-completed in roughly 4-6 seconds.
 
-## Auth and persistence
+## Runtime configuration
 
-Auth.js does not use a database adapter. Configure one demo user:
-
-```bash
-node -e "const bcrypt=require('bcryptjs'); bcrypt.hash('change-me', 12).then(console.log)"
-```
-
-Then set `AUTH_SECRET`, `HOU53_AUTH_EMAIL`, and
-`HOU53_AUTH_PASSWORD_HASH`. Prediction history uses `DATABASE_URL` and the
-Drizzle migration in `drizzle/0000_predictions.sql`.
+Auth.js uses one environment-backed CredentialsProvider user and JWT sessions;
+it has no database adapter or auth tables. Neon stores confirmed predictions
+only, through the Drizzle `predictions` table. Required runtime variables are
+listed in [.env.example](./.env.example).
 
 `POST /api/predict` calls `HOU53_API_BASE_URL` internally. The browser never
-calls FastAPI directly.
+calls FastAPI directly. `HOU53_API_AUTH_MODE=auto` keeps local/docker HTTP
+targets unauthenticated and adds a Google ID token only for Cloud Run
+`*.run.app` targets. Use `google` to force ID-token auth for a custom Cloud Run
+domain, or `none` to disable it explicitly.
+
+## Readiness assistant
+
+`POST /api/estimate/readiness` computes a deterministic `readiness_score`
+from structured fields and returns up to five helper questions for sparse
+inputs. The LLM may improve question wording, but it never predicts price or
+changes the score. Users can still run `Predict with sparse input`; FastAPI
+continues to accept partial payloads.
+
+Set `HOU53_READINESS_LLM_ENABLED=false` to force rule-based helper questions.
