@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { HouseFields } from "@/lib/housing/schema";
+import { authenticatedCloudRunFetch } from "@/server/gcp/authenticated-cloud-run-fetch";
 import type { PredictionApiPayload } from "@/server/predict/types";
 
 const featureContributionSchema = z.object({
@@ -27,10 +28,6 @@ const predictionApiPayloadSchema = z.object({
   }),
 });
 
-function apiBaseUrl(): string {
-  return (process.env.HOU53_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
-}
-
 function timeoutMs(): number {
   const raw = Number.parseInt(process.env.HOU53_API_TIMEOUT_MS ?? "10000", 10);
   return Number.isFinite(raw) && raw > 0 ? raw : 10_000;
@@ -55,7 +52,7 @@ export async function predictWithFastApi(
   const timeout = setTimeout(() => controller.abort(), timeoutMs());
 
   try {
-    const response = await fetch(`${apiBaseUrl()}/v1/predict`, {
+    const response = await authenticatedCloudRunFetch("/v1/predict", {
       method: "POST",
       headers: {
         "content-type": "application/json",
