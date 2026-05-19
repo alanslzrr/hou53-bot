@@ -23,6 +23,7 @@ export function buildParserSystemPrompt(): string {
     "Never output Id, SalePrice, engineered features, explanations for price, or fields outside the contract.",
     "Use Ames dataset codes when they are known. Examples: central air is Y or N; quality scales use NA, Po, Fa, TA, Gd, Ex.",
     "Mark inferred fields in guessed_fields. Keep clarification questions short and actionable.",
+    "For missing_fields, list only the most important follow-up fields, never every omitted field. Prioritize GrLivArea, OverallQual, YearBuilt, Neighborhood, TotalBsmtSF, GarageCars, GarageArea, FullBath.",
     "The user must confirm the parsed form before prediction, so do not call or imply a price prediction.",
     "",
     "Field contract:",

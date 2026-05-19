@@ -26,6 +26,7 @@ export default async function PredictionDetailPage({ params }: PredictionDetailP
   if (!row) {
     notFound();
   }
+  const readiness = row.parseMetadataJsonb?.readiness;
 
   return (
     <AppShell userName={session.user.name || session.user.email}>
@@ -39,6 +40,11 @@ export default async function PredictionDetailPage({ params }: PredictionDetailP
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{row.inputSource}</Badge>
               <Badge variant="outline">{row.modelVersion}</Badge>
+              {readiness ? (
+                <Badge variant={readiness.level === "strong" ? "default" : "outline"}>
+                  {readiness.level} · {readiness.score}/100
+                </Badge>
+              ) : null}
             </div>
             <p className="text-muted-foreground text-sm">{row.resultJsonb.explanation.natural_language}</p>
             <Separator />

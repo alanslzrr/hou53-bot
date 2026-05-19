@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ChatStatus } from "ai";
 import { nanoid } from "nanoid";
+import type { ReactNode } from "react";
 import { useMemo, useReducer, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -23,13 +24,17 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { HouseFeatureName, HouseFieldValue, HouseFields } from "@/lib/housing/schema";
 import type { ParseResponse } from "@/lib/nlp/types";
+import type { ReadinessRouteResponse, ReadinessSuccessResponse } from "@/lib/readiness/types";
 import type { PredictionInputSource, PredictionParseMetadata } from "@/server/db/schema";
 import type { PredictRouteResponse } from "@/server/predict/types";
 
 import { estimateReducer, initialEstimateState } from "./estimate-state";
-import { HousingForm } from "./housing-form";
+import { FieldEditorPanel } from "./field-editor-panel";
+import { FIELD_CONFIG_BY_NAME } from "./field-config";
 import { housingFormSchema, type HousingFormValues } from "./housing-form-schema";
 import { staleParsedFieldNamesToClear } from "./parse-field-application";
+import { assessPredictionSignal } from "./prediction-signal";
+import type { ReadinessAnswerValues } from "./readiness-assistant-panel";
 import { ResultPanel } from "./result-panel";
 
 const PROMPT_SUGGESTIONS = [
@@ -102,14 +107,26 @@ function PromptComposer({
   );
 }
 
+function CommandPanel({ children }: { children: ReactNode }) {
+  return (
+    <section className="flex min-h-0 flex-col gap-5 lg:overflow-y-auto lg:py-5 lg:pr-2">
+      {children}
+    </section>
+  );
+}
+
 export function EstimateWorkspace() {
   const [state, dispatch] = useReducer(estimateReducer, initialEstimateState);
   const [aiFields, setAiFields] = useState<ReadonlySet<HouseFeatureName>>(new Set());
   const [guessedFields, setGuessedFields] = useState<ReadonlySet<HouseFeatureName>>(new Set());
   const [confidence, setConfidence] = useState<Partial<Record<HouseFeatureName, number>>>({});
-  const [missingFields, setMissingFields] = useState<HouseFeatureName[]>([]);
   const [parseMetadata, setParseMetadata] = useState<PredictionParseMetadata | undefined>();
   const [inputSource, setInputSource] = useState<PredictionInputSource>("manual");
+  const [idempotencyKey, setIdempotencyKey] = useState(() => nanoid());
+  const [readiness, setReadiness] = useState<ReadinessSuccessResponse | undefined>();
+  const [readinessForPrediction, setReadinessForPrediction] = useState<ReadinessSuccessResponse | undefined>();
+  const [readinessAnswers, setReadinessAnswers] = useState<ReadinessAnswerValues>({});
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<ReadonlySet<string>>(new Set());
 
   const form = useForm<HousingFormValues>({
     resolver: zodResolver(housingFormSchema),
@@ -118,8 +135,34 @@ export function EstimateWorkspace() {
   });
   const watchedValues = useWatch({ control: form.control });
 
-  const filledCount = useMemo(() => Object.keys(pruneFields(watchedValues)).length, [watchedValues]);
-  const canPredict = hasMeaningfulFields(watchedValues) && state.status !== "parsing" && state.status !== "predicting";
+  const prunedFields = useMemo(() => pruneFields(watchedValues), [watchedValues]);
+  const filledCount = useMemo(() => Object.keys(prunedFields).length, [prunedFields]);
+  const predictionSignal = useMemo(() => assessPredictionSignal(prunedFields), [prunedFields]);
+  const canPredict =
+    hasMeaningfulFields(watchedValues) &&
+    state.status !== "parsing" &&
+    state.status !== "assessing" &&
+    state.status !== "applying_answers" &&
+    state.status !== "predicting";
+
+  function clearReadinessState() {
+    setReadiness(undefined);
+    setReadinessForPrediction(undefined);
+    setReadinessAnswers({});
+    setAnsweredQuestionIds(new Set());
+  }
+
+  function resetEstimate() {
+    form.reset({});
+    setAiFields(new Set());
+    setGuessedFields(new Set());
+    setConfidence({});
+    setParseMetadata(undefined);
+    setInputSource("manual");
+    setIdempotencyKey(nanoid());
+    clearReadinessState();
+    dispatch({ type: "reset" });
+  }
 
   function patchParsedFields(fields: Partial<Record<HouseFeatureName, HouseFieldValue>>) {
     const dirtyFields = form.formState.dirtyFields as Partial<Record<HouseFeatureName, boolean>>;
@@ -153,6 +196,8 @@ export function EstimateWorkspace() {
 
   async function handleParse(description: string) {
     dispatch({ type: "parse_start" });
+    setIdempotencyKey(nanoid());
+    clearReadinessState();
 
     const response = await fetch("/api/parse", {
       method: "POST",
@@ -167,7 +212,6 @@ export function EstimateWorkspace() {
       setAiFields(new Set(parsedNames));
       setGuessedFields(new Set(payload.guessed_fields));
       setConfidence(payload.field_confidence);
-      setMissingFields(payload.missing_fields);
       setParseMetadata({
         parse_request_id: payload.request_id,
         model: payload.model,
@@ -190,6 +234,8 @@ export function EstimateWorkspace() {
   }
 
   function handleManualEdit() {
+    setIdempotencyKey(nanoid());
+    clearReadinessState();
     if (aiFields.size > 0) {
       setInputSource("mixed");
     } else {
@@ -198,35 +244,195 @@ export function EstimateWorkspace() {
     dispatch({ type: "edit" });
   }
 
-  const submitPrediction = form.handleSubmit(async (values) => {
-    dispatch({ type: "predict_start" });
-    const response = await fetch("/api/predict", {
+  function parseMetadataWithReadiness(readinessOverride?: ReadinessSuccessResponse): PredictionParseMetadata | undefined {
+    const activeReadiness = readinessOverride ?? readinessForPrediction ?? readiness;
+    if (!activeReadiness) {
+      return parseMetadata;
+    }
+
+    return {
+      ...(parseMetadata ?? {}),
+      readiness: {
+        score: activeReadiness.readiness_score,
+        level: activeReadiness.level,
+        missing_signal_groups: activeReadiness.missing_signal_groups,
+        answered_question_ids: [...answeredQuestionIds],
+      },
+    };
+  }
+
+  async function submitPrediction(readinessOverride?: ReadinessSuccessResponse) {
+    await form.handleSubmit(async (values) => {
+      dispatch({ type: "predict_start" });
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fields: pruneFields(values),
+          input_source: inputSource,
+          parse_metadata: parseMetadataWithReadiness(readinessOverride),
+          idempotency_key: idempotencyKey,
+        }),
+      });
+      const payload = (await response.json()) as PredictRouteResponse;
+
+      if (payload.ok) {
+        dispatch({ type: "predict_success", result: payload });
+        if (payload.warning) {
+          toast.warning(payload.warning);
+        }
+        return;
+      }
+
+      dispatch({ type: "predict_error", error: payload.error });
+    })();
+  }
+
+  async function requestReadiness() {
+    dispatch({ type: "assess_start" });
+    const response = await fetch("/api/estimate/readiness", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        fields: pruneFields(values),
+        fields: prunedFields,
         input_source: inputSource,
         parse_metadata: parseMetadata,
-        idempotency_key: nanoid(),
       }),
     });
-    const payload = (await response.json()) as PredictRouteResponse;
+    const payload = (await response.json()) as ReadinessRouteResponse;
 
-    if (payload.ok) {
-      dispatch({ type: "predict_success", result: payload });
-      if (payload.warning) {
-        toast.warning(payload.warning);
-      }
+    if (!payload.ok) {
+      dispatch({ type: "readiness_error", error: payload.error });
       return;
     }
 
-    dispatch({ type: "predict_error", error: payload.error });
-  });
+    setReadiness(payload);
+    setReadinessForPrediction(payload);
+    setReadinessAnswers({});
+    setAnsweredQuestionIds(new Set());
+
+    if (payload.level === "strong" || payload.questions.length === 0) {
+      await submitPrediction(payload);
+      return;
+    }
+
+    dispatch({ type: "readiness_needs_more_signal" });
+  }
+
+  async function handlePredictIntent() {
+    if (predictionSignal.ready) {
+      await submitPrediction();
+      return;
+    }
+
+    await requestReadiness();
+  }
+
+  function coerceReadinessAnswer(fieldName: HouseFeatureName, rawValue: HouseFieldValue | undefined): HouseFieldValue | undefined {
+    if (rawValue === undefined || rawValue === "") {
+      return undefined;
+    }
+
+    const config = FIELD_CONFIG_BY_NAME.get(fieldName);
+    if (config?.kind !== "number") {
+      return rawValue;
+    }
+
+    const normalized = String(rawValue).replace(/,/g, "");
+    const parsed = config.valueType === "integer"
+      ? Number.parseInt(normalized, 10)
+      : Number.parseFloat(normalized);
+
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  function handleReadinessAnswerChange(fieldName: HouseFeatureName, value: HouseFieldValue | undefined) {
+    const coerced = coerceReadinessAnswer(fieldName, value);
+
+    setReadinessAnswers((current) => {
+      const next = { ...current };
+      if (coerced === undefined) {
+        delete next[fieldName];
+      } else {
+        next[fieldName] = coerced;
+      }
+      return next;
+    });
+
+    form.setValue(fieldName, coerced, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    setAnsweredQuestionIds((current) => {
+      const next = new Set(current);
+      for (const question of readiness?.questions ?? []) {
+        if (question.target_fields.includes(fieldName)) {
+          if (coerced === undefined) {
+            next.delete(question.id);
+          } else {
+            next.add(question.id);
+          }
+        }
+      }
+      return next;
+    });
+    setAiFields((current) => new Set([...current].filter((name) => name !== fieldName)));
+    setGuessedFields((current) => new Set([...current].filter((name) => name !== fieldName)));
+    setInputSource("mixed");
+    setIdempotencyKey(nanoid());
+  }
+
+  function handleReadinessQuickAnswer(
+    question: { target_fields: HouseFeatureName[] },
+    value: string,
+  ) {
+    const [fieldName] = question.target_fields;
+    if (!fieldName) {
+      return;
+    }
+    handleReadinessAnswerChange(fieldName, value);
+  }
+
+  function handleApplyReadinessAnswers() {
+    if (!readiness) {
+      return;
+    }
+
+    dispatch({ type: "apply_readiness_answers" });
+    const answeredFields = new Set(Object.keys(readinessAnswers) as HouseFeatureName[]);
+    if (answeredFields.size === 0) {
+      dispatch({ type: "readiness_answers_applied" });
+      return;
+    }
+
+    for (const fieldName of answeredFields) {
+      form.setValue(fieldName, readinessAnswers[fieldName], {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+
+    const answeredIds = readiness.questions
+      .filter((question) => question.target_fields.some((fieldName) => answeredFields.has(fieldName)))
+      .map((question) => question.id);
+
+    setAnsweredQuestionIds(new Set(answeredIds));
+    setReadinessForPrediction(readiness);
+    setAiFields((current) => new Set([...current].filter((fieldName) => !answeredFields.has(fieldName))));
+    setGuessedFields((current) => new Set([...current].filter((fieldName) => !answeredFields.has(fieldName))));
+    setInputSource("mixed");
+    setIdempotencyKey(nanoid());
+    setReadiness(undefined);
+    setReadinessAnswers({});
+    dispatch({ type: "readiness_answers_applied" });
+  }
 
   return (
-    <main className="mx-auto grid max-w-7xl grid-cols-1 gap-5 px-4 py-5 lg:grid-cols-[minmax(0,1fr)_420px]">
-      <section className="flex flex-col gap-5">
-        <Card>
+    <main className="mx-auto grid w-full max-w-[112rem] grid-cols-1 gap-5 px-4 py-5 lg:h-[calc(100svh-3.75rem)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,500px)] lg:gap-6 lg:overflow-hidden lg:py-0">
+      <CommandPanel>
+        <Card size="sm" className="shrink-0">
           <CardHeader>
             <CardTitle>New estimate</CardTitle>
             <CardDescription>Describe a house, review extracted fields, then run the model-backed valuation.</CardDescription>
@@ -240,24 +446,29 @@ export function EstimateWorkspace() {
             </PromptInputProvider>
           </CardContent>
         </Card>
-        <HousingForm
-          form={form}
-          aiFields={aiFields}
-          guessedFields={guessedFields}
-          confidence={confidence}
-          onManualEdit={handleManualEdit}
-        />
-      </section>
-      <aside>
         <ResultPanel
           state={state}
           filledCount={filledCount}
           aiFilledCount={aiFields.size}
-          missingCount={missingFields.length}
+          predictionSignal={predictionSignal}
+          readiness={readiness}
+          readinessAnswers={readinessAnswers}
+          onReadinessAnswerChange={handleReadinessAnswerChange}
+          onReadinessQuickAnswer={handleReadinessQuickAnswer}
+          onApplyReadinessAnswers={handleApplyReadinessAnswers}
+          onPredictSparse={() => void submitPrediction(readiness)}
           canPredict={canPredict}
-          onPredict={() => void submitPrediction()}
+          onPredict={() => void handlePredictIntent()}
+          onReset={resetEstimate}
         />
-      </aside>
+      </CommandPanel>
+      <FieldEditorPanel
+        form={form}
+        aiFields={aiFields}
+        guessedFields={guessedFields}
+        confidence={confidence}
+        onManualEdit={handleManualEdit}
+      />
     </main>
   );
 }

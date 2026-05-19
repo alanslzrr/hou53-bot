@@ -10,21 +10,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatDateTime, formatUsd } from "@/lib/format";
+import type { HouseFeatureName, HouseFieldValue } from "@/lib/housing/schema";
+import type { ReadinessErrorResponse, ReadinessQuestion, ReadinessSuccessResponse } from "@/lib/readiness/types";
 import type { PredictSuccessResponse } from "@/server/predict/types";
 
 import type { EstimateState } from "./estimate-state";
+import type { PredictionSignal } from "./prediction-signal";
+import { ReadinessAssistantPanel, type ReadinessAnswerValues } from "./readiness-assistant-panel";
 
 type ResultPanelProps = {
   state: EstimateState;
   filledCount: number;
   aiFilledCount: number;
-  missingCount: number;
+  predictionSignal: PredictionSignal;
+  readiness?: ReadinessSuccessResponse;
+  readinessAnswers: ReadinessAnswerValues;
+  onReadinessAnswerChange: (fieldName: HouseFeatureName, value: HouseFieldValue | undefined) => void;
+  onReadinessQuickAnswer: (question: ReadinessQuestion, value: string) => void;
+  onApplyReadinessAnswers: () => void;
+  onPredictSparse: () => void;
   canPredict: boolean;
   onPredict: () => void;
+  onReset: () => void;
 };
 
 function StatusBadge({ state }: { state: EstimateState }) {
-  if (state.status === "parsing" || state.status === "predicting") {
+  if (["parsing", "assessing", "applying_answers", "predicting"].includes(state.status)) {
     return <Badge variant="secondary">Working</Badge>;
   }
   if (state.status === "predicted") {
@@ -41,16 +52,27 @@ function StatusBadge({ state }: { state: EstimateState }) {
 
 function WorkflowTask({ state }: { state: EstimateState }) {
   const parsingDone = !["idle", "parsing"].includes(state.status);
+  const assessingDone = !["idle", "parsing", "parsed_partial", "parsed_valid", "editing", "assessing"].includes(state.status);
+  const improveDone = state.status === "predicting" || state.status === "predicted";
   const predictingDone = state.status === "predicted";
   const saved = state.result?.saved;
+  const active = ["parsing", "assessing", "applying_answers", "predicting"].includes(state.status);
 
   return (
-    <Task defaultOpen={state.status !== "predicted"}>
+    <Task defaultOpen={active}>
       <TaskTrigger title="Workflow status" />
       <TaskContent>
         <TaskItem className="flex items-center gap-2">
           {parsingDone ? <CheckCircle2Icon /> : <CircleDotIcon />}
           Extract and validate fields
+        </TaskItem>
+        <TaskItem className="flex items-center gap-2">
+          {assessingDone ? <CheckCircle2Icon /> : <CircleDotIcon />}
+          Assess input signal
+        </TaskItem>
+        <TaskItem className="flex items-center gap-2">
+          {improveDone ? <CheckCircle2Icon /> : <CircleDotIcon />}
+          Improve sparse fields
         </TaskItem>
         <TaskItem className="flex items-center gap-2">
           {predictingDone ? <CheckCircle2Icon /> : <CircleDotIcon />}
@@ -116,26 +138,92 @@ function PriceResult({ result }: { result: PredictSuccessResponse }) {
   );
 }
 
-export function ResultPanel({ state, filledCount, aiFilledCount, missingCount, canPredict, onPredict }: ResultPanelProps) {
-  const busy = state.status === "parsing" || state.status === "predicting";
+export function ResultPanel({
+  state,
+  filledCount,
+  aiFilledCount,
+  predictionSignal,
+  readiness,
+  readinessAnswers,
+  onReadinessAnswerChange,
+  onReadinessQuickAnswer,
+  onApplyReadinessAnswers,
+  onPredictSparse,
+  canPredict,
+  onPredict,
+  onReset,
+}: ResultPanelProps) {
+  const busy = state.status === "parsing" || state.status === "assessing" || state.status === "predicting";
+  const assessing = state.status === "assessing";
+  const signalLabel = predictionSignal.ready ? "model signal ready" : `${predictionSignal.missingSignals.length} signal gaps`;
+  const readinessError = state.readinessError as ReadinessErrorResponse["error"] | undefined;
+  const hasAnyInput = filledCount > 0;
+  const isPredicted = state.status === "predicted";
+  const primaryLabel = isPredicted
+    ? "Start new estimate"
+    : state.status === "predicting"
+      ? "Estimating..."
+      : assessing
+        ? "Assessing..."
+        : predictionSignal.ready
+          ? "Predict price"
+          : "Improve estimate";
 
   return (
-    <Card className="sticky top-20">
+    <Card className="overflow-visible">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <CardTitle>Estimate summary</CardTitle>
           <StatusBadge state={state} />
         </div>
-        <CardDescription>{filledCount} fields filled · {aiFilledCount} AI-filled · {missingCount} missing hints</CardDescription>
+        <CardDescription>
+          {filledCount} fields filled · {aiFilledCount} AI-filled · {signalLabel}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        {busy ? <Shimmer>{state.status === "parsing" ? "Extracting fields" : "Estimating price"}</Shimmer> : null}
-        <WorkflowTask state={state} />
+        {busy ? (
+          <Shimmer>
+            {state.status === "parsing"
+              ? "Extracting fields"
+              : state.status === "assessing"
+                ? "Assessing input signal"
+                : "Estimating price"}
+          </Shimmer>
+        ) : null}
+        {state.result ? <PriceResult result={state.result} /> : null}
+        {readiness && readiness.questions.length > 0 && !state.result ? (
+          <ReadinessAssistantPanel
+            readiness={readiness}
+            answers={readinessAnswers}
+            onAnswerChange={onReadinessAnswerChange}
+            onQuickAnswer={onReadinessQuickAnswer}
+            onApplyAnswers={onApplyReadinessAnswers}
+            onPredictSparse={onPredictSparse}
+            isApplying={state.status === "applying_answers"}
+          />
+        ) : null}
+        {hasAnyInput && !predictionSignal.ready && !state.result && !readiness ? (
+          <Alert>
+            <AlertCircleIcon />
+            <AlertTitle>More appraisal signal needed</AlertTitle>
+            <AlertDescription>
+              Add {predictionSignal.missingSignals.join(" and ")} before estimating. Sparse inputs collapse toward
+              model defaults and produce low-confidence prices.
+            </AlertDescription>
+          </Alert>
+        ) : null}
         {state.parseError ? (
           <Alert variant="destructive">
             <AlertCircleIcon />
             <AlertTitle>Parse failed</AlertTitle>
             <AlertDescription>{state.parseError.message}</AlertDescription>
+          </Alert>
+        ) : null}
+        {readinessError ? (
+          <Alert variant="destructive">
+            <AlertCircleIcon />
+            <AlertTitle>Readiness check failed</AlertTitle>
+            <AlertDescription>{readinessError.message}</AlertDescription>
           </Alert>
         ) : null}
         {state.predictError ? (
@@ -145,10 +233,16 @@ export function ResultPanel({ state, filledCount, aiFilledCount, missingCount, c
             <AlertDescription>{state.predictError.message}</AlertDescription>
           </Alert>
         ) : null}
-        {state.result ? <PriceResult result={state.result} /> : null}
-        <Button onClick={onPredict} disabled={!canPredict || state.status === "predicting"}>
-          {state.status === "predicting" ? "Estimating..." : "Predict price"}
-        </Button>
+        <WorkflowTask state={state} />
+        <div className="-mx-6 -mb-6 border-t bg-card/95 px-6 py-4 backdrop-blur lg:sticky lg:bottom-0">
+          <Button
+            className="w-full"
+            onClick={isPredicted ? onReset : onPredict}
+            disabled={!isPredicted && (!canPredict || state.status === "predicting" || assessing)}
+          >
+            {primaryLabel}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
