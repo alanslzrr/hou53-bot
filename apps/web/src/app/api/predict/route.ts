@@ -5,27 +5,17 @@ import { auth } from "@/auth";
 import { houseFieldsSchema, type HouseFields } from "@/lib/housing/schema";
 import { createPrediction, findPredictionByUserAndIdempotency } from "@/server/predictions/repository";
 import { PredictClientError, predictWithFastApi } from "@/server/predict/client";
+import { predictionParseMetadataSchema } from "@/server/predict/metadata";
 import type { PredictErrorResponse, PredictSuccessResponse } from "@/server/predict/types";
 import type { PredictionRow } from "@/server/db/schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const parseMetadataSchema = z
-  .object({
-    parse_request_id: z.string().optional(),
-    model: z.string().optional(),
-    guessed_fields: z.array(z.string()).optional(),
-    missing_fields: z.array(z.string()).optional(),
-    field_confidence: z.record(z.string(), z.number()).optional(),
-    clarification_questions: z.array(z.string()).optional(),
-  })
-  .strip();
-
 const requestSchema = z.object({
   fields: houseFieldsSchema,
   input_source: z.enum(["manual", "nlp", "mixed"]),
-  parse_metadata: parseMetadataSchema.optional(),
+  parse_metadata: predictionParseMetadataSchema.optional(),
   idempotency_key: z.string().min(8).max(128),
 });
 
