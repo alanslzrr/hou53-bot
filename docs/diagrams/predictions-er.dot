@@ -1,0 +1,39 @@
+// ER for the predictions table.
+// Render: dot -Tsvg docs/diagrams/predictions-er.dot -o docs/diagrams/predictions-er.svg
+digraph PredictionsER {
+  bgcolor="transparent"
+  rankdir=LR
+  fontname="Helvetica"
+
+  node [
+    shape=plaintext,
+    fontname="Helvetica"
+  ]
+
+  predictions [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6"
+           BGCOLOR="#1f3864" COLOR="#0d1f3a">
+      <TR><TD BGCOLOR="#0d1f3a" COLSPAN="2" ALIGN="CENTER">
+        <FONT COLOR="white" POINT-SIZE="12"><B>predictions</B></FONT>
+      </TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white"><B>id</B></FONT></TD>           <TD ALIGN="LEFT"><FONT COLOR="white">uuid · pk</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">user_id</FONT></TD>             <TD ALIGN="LEFT"><FONT COLOR="white">text · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">input_jsonb</FONT></TD>         <TD ALIGN="LEFT"><FONT COLOR="white">jsonb · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">input_source</FONT></TD>        <TD ALIGN="LEFT"><FONT COLOR="white">text · manual | nlp | mixed</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">parse_metadata_jsonb</FONT></TD><TD ALIGN="LEFT"><FONT COLOR="white">jsonb · nullable</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">predicted_price_usd_cents</FONT></TD><TD ALIGN="LEFT"><FONT COLOR="white">integer · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">model_version</FONT></TD>       <TD ALIGN="LEFT"><FONT COLOR="white">text · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">api_request_id</FONT></TD>      <TD ALIGN="LEFT"><FONT COLOR="white">text · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">result_jsonb</FONT></TD>        <TD ALIGN="LEFT"><FONT COLOR="white">jsonb · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">shap_jsonb</FONT></TD>          <TD ALIGN="LEFT"><FONT COLOR="white">jsonb · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">idempotency_key</FONT></TD>     <TD ALIGN="LEFT"><FONT COLOR="white">text · not null</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="white">created_at</FONT></TD>          <TD ALIGN="LEFT"><FONT COLOR="white">timestamptz · default now()</FONT></TD></TR>
+      <TR><TD COLSPAN="2" BGCOLOR="#0d1f3a" ALIGN="LEFT">
+        <FONT COLOR="white"><B>index</B> (user_id, created_at desc)</FONT>
+      </TD></TR>
+      <TR><TD COLSPAN="2" BGCOLOR="#0d1f3a" ALIGN="LEFT">
+        <FONT COLOR="white"><B>unique</B> (user_id, idempotency_key)</FONT>
+      </TD></TR>
+    </TABLE>
+  >]
+}

@@ -1,0 +1,44 @@
+// Predict-flow sequence — using graphviz's swimlane-ish layout.
+// Render: dot -Tsvg docs/diagrams/predict-sequence.dot -o docs/diagrams/predict-sequence.svg
+digraph PredictSequence {
+  bgcolor="transparent"
+  rankdir=TB
+  fontname="Helvetica"
+  nodesep=0.3
+  ranksep=0.45
+
+  node [
+    shape=box, style="filled,rounded",
+    fillcolor="#1f3864", color="#1f3864",
+    fontcolor="white",
+    fontname="Helvetica", fontsize=10,
+    margin="0.18,0.08"
+  ]
+  edge [
+    color="#9e9e9e",
+    fontcolor="#9e9e9e",
+    fontname="Helvetica", fontsize=9,
+    arrowsize=0.7
+  ]
+
+  s0  [label="User describes the house\n(free text)"]
+  s1  [label="POST /api/parse\nNext.js → OpenAI structured output"]
+  s2  [label="Parsed JSON returned to the form\n(fields + guessed + missing + confidence)"]
+  s3  [label="User reviews / edits / confirms"]
+  s4  [label="POST /api/estimate/readiness\n(optional, scores input 0-100)"]
+  s5  [label="POST /api/predict (BFF)"]
+  s6a [label="Auth.js session check"]
+  s6b [label="Idempotency lookup\nDrizzle → Neon (UNIQUE user_id, idempotency_key)"]
+  s7  [label="Mint Google ID token\n(google-auth-library, audience = Cloud Run API)"]
+  s8  [label="POST /v1/predict\nFastAPI (Bearer ID token)"]
+  s9  [label="Pipeline.predict + SHAP TreeExplainer\n(loaded once at lifespan)"]
+  s10 [label="Response: { prediction, explanation, model }"]
+  s11 [label="Persist row\nDrizzle → Neon (ON CONFLICT DO NOTHING)", shape=cylinder]
+  s12 [label="Browser renders price + SHAP top features"]
+
+  s0 -> s1 -> s2 -> s3 -> s4 -> s5
+  s5 -> s6a -> s6b
+  s6b -> s7  [label="not cached"]
+  s6b -> s12 [label="cached → replay", style=dashed, constraint=false]
+  s7 -> s8 -> s9 -> s10 -> s11 -> s12
+}

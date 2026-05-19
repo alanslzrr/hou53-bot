@@ -1,0 +1,75 @@
+// Runtime architecture for HOU53-bot.
+// Render: dot -Tsvg docs/diagrams/architecture.dot -o docs/diagrams/architecture.svg
+digraph Architecture {
+  bgcolor="transparent"
+  rankdir=LR
+  compound=true
+  nodesep=0.35
+  ranksep=0.6
+  fontname="Helvetica"
+
+  node [
+    shape=box, style="filled,rounded",
+    fillcolor="#1f3864", color="#1f3864",
+    fontcolor="white",
+    fontname="Helvetica", fontsize=10,
+    margin="0.18,0.10"
+  ]
+  edge [
+    color="#9e9e9e",
+    fontcolor="#9e9e9e",
+    fontname="Helvetica", fontsize=9,
+    arrowsize=0.7
+  ]
+
+  user        [label="User browser"]
+  openai      [label="OpenAI"]
+  iam         [label="Google IAM"]
+  neon        [label="Neon Postgres\npredictions", shape=cylinder]
+
+  subgraph cluster_web {
+    label="Cloud Run · apps/web (Next.js)"
+    style="dashed"
+    color="#9e9e9e"
+    fontcolor="#bdbdbd"
+    fontsize=11
+
+    auth        [label="Auth.js\nCredentials/JWT"]
+    parse       [label="POST /api/parse"]
+    readiness   [label="POST /api/estimate/readiness"]
+    predict_bff [label="POST /api/predict (BFF)"]
+    history     [label="/history pages"]
+    drizzle     [label="Drizzle ORM"]
+  }
+
+  subgraph cluster_api {
+    label="Cloud Run · apps/api (FastAPI)"
+    style="dashed"
+    color="#9e9e9e"
+    fontcolor="#bdbdbd"
+    fontsize=11
+
+    api_predict [label="POST /v1/predict"]
+    shap        [label="SHAP TreeExplainer"]
+    pipeline    [label="XGBoost\npipeline.joblib", shape=cylinder]
+  }
+
+  user        -> auth        [label="HTTPS"]
+  user        -> parse       [label="HTTPS"]
+  user        -> readiness   [label="HTTPS"]
+  user        -> predict_bff [label="HTTPS"]
+  user        -> history     [label="HTTPS"]
+
+  parse       -> openai      [label="structured output"]
+  readiness   -> openai      [label="optional rewrite", style=dashed]
+
+  predict_bff -> iam         [label="mint ID token"]
+  predict_bff -> api_predict [label="Bearer ID token"]
+
+  predict_bff -> drizzle     [label="idempotent insert"]
+  history     -> drizzle     [label="read by user_id"]
+  drizzle     -> neon        [label="SQL"]
+
+  api_predict -> shap
+  api_predict -> pipeline
+}
