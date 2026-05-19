@@ -2,6 +2,7 @@ import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } fr
 
 import type { HouseFields } from "@/lib/housing/schema";
 import type { PredictionApiPayload } from "@/server/predict/types";
+import type { ReadinessLevel } from "@/lib/readiness/types";
 
 export type PredictionInputSource = "manual" | "nlp" | "mixed";
 
@@ -12,6 +13,12 @@ export type PredictionParseMetadata = {
   missing_fields?: string[];
   field_confidence?: Record<string, number>;
   clarification_questions?: string[];
+  readiness?: {
+    score: number;
+    level: ReadinessLevel;
+    missing_signal_groups: string[];
+    answered_question_ids: string[];
+  };
 };
 
 export const predictions = pgTable(
