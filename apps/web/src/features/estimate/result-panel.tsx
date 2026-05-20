@@ -2,6 +2,7 @@
 
 import { AlertCircleIcon, CheckCircle2Icon, CircleDotIcon, DatabaseIcon } from "lucide-react";
 
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Task, TaskContent, TaskItem, TaskTrigger } from "@/components/ai-elements/task";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatDateTime, formatUsd } from "@/lib/format";
+import { getModelFeatureCopy, humanizeExplanationText } from "@/lib/housing/feature-copy";
 import type { HouseFeatureName, HouseFieldValue } from "@/lib/housing/schema";
 import type { ReadinessErrorResponse, ReadinessQuestion, ReadinessSuccessResponse } from "@/lib/readiness/types";
 import type { PredictSuccessResponse } from "@/server/predict/types";
@@ -88,25 +90,36 @@ function WorkflowTask({ state }: { state: EstimateState }) {
 }
 
 function PriceResult({ result }: { result: PredictSuccessResponse }) {
+  const topFeatureNames = result.explanation.top_features.map((feature) => feature.feature);
+
   return (
     <div className="flex flex-col gap-4">
       <div>
         <p className="text-muted-foreground text-sm">Estimated sale price</p>
         <p className="font-heading text-4xl">{formatUsd(result.prediction.value_usd)}</p>
       </div>
-      <p className="text-muted-foreground text-sm">{result.explanation.natural_language}</p>
+      <p className="text-muted-foreground text-sm">
+        {humanizeExplanationText(result.explanation.natural_language, topFeatureNames)}
+      </p>
       <Separator />
       <div className="flex flex-col gap-3">
         <p className="font-medium text-sm">Top SHAP drivers</p>
-        {result.explanation.top_features.map((feature) => (
-          <div key={feature.feature} className="flex items-center justify-between gap-3 text-sm">
-            <span className="truncate">{feature.feature}</span>
-            <div className="flex items-center gap-2">
-              <Badge variant={feature.direction === "up" ? "secondary" : "outline"}>{feature.direction}</Badge>
-              <span className="font-mono">{formatUsd(feature.contribution_usd)}</span>
+        {result.explanation.top_features.map((feature) => {
+          const copy = getModelFeatureCopy(feature.feature);
+
+          return (
+            <div key={feature.feature} className="flex items-center justify-between gap-3 text-sm">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span className="truncate">{copy.label}</span>
+                <InfoTooltip label={`What is ${copy.label}?`}>{copy.description}</InfoTooltip>
+              </span>
+              <div className="flex shrink-0 items-center gap-2">
+                <Badge variant={feature.direction === "up" ? "secondary" : "outline"}>{feature.direction}</Badge>
+                <span className="font-mono">{formatUsd(feature.contribution_usd)}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <Separator />
       <dl className="grid grid-cols-2 gap-3 text-sm">
