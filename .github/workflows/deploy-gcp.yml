@@ -1,0 +1,118 @@
+name: Deploy GCP
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Service to deploy
+        required: true
+        default: both
+        type: choice
+        options:
+          - api
+          - web
+          - both
+
+concurrency:
+  group: gcp-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    env:
+      PROJECT_ID: bold-victory-493607-r6
+      REGION: europe-southwest1
+      AR_REPO: hou53
+      API_SERVICE: hou53-api
+      WEB_SERVICE: hou53-web
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'both' }}
+      DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+    steps:
+      - name: Check out tested commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Deploy selected service images
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SHORT_SHA="${DEPLOY_SHA:0:7}"
+          TAG="${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+
+          echo "Deploy target: ${TARGET}"
+          echo "Deploy commit: ${DEPLOY_SHA}"
+          echo "Image tag: ${TAG}"
+
+          if [[ "${TARGET}" == "api" || "${TARGET}" == "both" ]]; then
+            API_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${API_SERVICE}:${TAG}"
+
+            gcloud builds submit . \
+              --project="${PROJECT_ID}" \
+              --config=.gcp/cloudbuild-api.yaml \
+              --substitutions="_IMAGE=${API_IMAGE}" \
+              --quiet
+
+            gcloud run services update "${API_SERVICE}" \
+              --project="${PROJECT_ID}" \
+              --region="${REGION}" \
+              --image="${API_IMAGE}" \
+              --quiet
+
+            API_URL="$(gcloud run services describe "${API_SERVICE}" \
+              --project="${PROJECT_ID}" \
+              --region="${REGION}" \
+              --format='value(status.url)')"
+            echo "API deployed: ${API_URL}"
+          fi
+
+          if [[ "${TARGET}" == "web" || "${TARGET}" == "both" ]]; then
+            WEB_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${WEB_SERVICE}:${TAG}"
+
+            gcloud builds submit . \
+              --project="${PROJECT_ID}" \
+              --config=.gcp/cloudbuild-web.yaml \
+              --substitutions="_IMAGE=${WEB_IMAGE}" \
+              --quiet
+
+            gcloud run services update "${WEB_SERVICE}" \
+              --project="${PROJECT_ID}" \
+              --region="${REGION}" \
+              --image="${WEB_IMAGE}" \
+              --quiet
+
+            WEB_URL="$(gcloud run services describe "${WEB_SERVICE}" \
+              --project="${PROJECT_ID}" \
+              --region="${REGION}" \
+              --format='value(status.url)')"
+            echo "Web deployed: ${WEB_URL}"
+          fi
