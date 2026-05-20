@@ -3,6 +3,7 @@ import {
   houseSchemaContract,
   type HouseFeatureName,
 } from "@/lib/housing/schema";
+import { getHouseFeatureCopy } from "@/lib/housing/feature-copy";
 
 import { FIELD_GROUP_BY_NAME, FIELD_GROUPS, type FieldGroupId } from "./groups";
 
@@ -22,31 +23,11 @@ export type EstimateFieldConfig = {
 };
 
 function labelFor(name: string): string {
-  return name
-    .replace(/^1st/, "1st ")
-    .replace(/^2nd/, "2nd ")
-    .replace(/^3Ssn/, "3 season ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/([A-Za-z])(\d)/g, "$1 $2")
-    .replace(/SF$/, "SF")
-    .trim();
+  return getHouseFeatureCopy(name).label;
 }
 
 function descriptionFor(field: EstimateFieldConfig): string | undefined {
-  const bounds: string[] = [];
-  if (field.min !== undefined) {
-    bounds.push(`min ${field.min}`);
-  }
-  if (field.max !== undefined) {
-    bounds.push(`max ${field.max}`);
-  }
-  if (bounds.length > 0) {
-    return bounds.join(", ");
-  }
-  if (field.options && field.options.length > 0) {
-    return `${field.options.length} known Ames values`;
-  }
-  return undefined;
+  return getHouseFeatureCopy(field.name).description;
 }
 
 function kindFor(feature: (typeof houseSchemaContract.features)[number]): FieldKind {
