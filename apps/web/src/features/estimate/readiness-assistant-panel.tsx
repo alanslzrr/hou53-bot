@@ -2,6 +2,7 @@
 
 import { SparklesIcon } from "lucide-react";
 
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +53,10 @@ function QuestionInput({
   if (field.kind === "select") {
     return (
       <Field>
-        <FieldLabel>{field.label}</FieldLabel>
+        <FieldLabel>
+          <span>{field.label}</span>
+          {field.description ? <InfoTooltip label={`What is ${field.label}?`}>{field.description}</InfoTooltip> : null}
+        </FieldLabel>
         <Select
           value={value === undefined || value === null ? undefined : String(value)}
           onValueChange={(nextValue) => onAnswerChange(fieldName, nextValue || undefined)}
@@ -77,7 +81,10 @@ function QuestionInput({
 
   return (
     <Field>
-      <FieldLabel>{field.label}</FieldLabel>
+      <FieldLabel>
+        <span>{field.label}</span>
+        {field.description ? <InfoTooltip label={`What is ${field.label}?`}>{field.description}</InfoTooltip> : null}
+      </FieldLabel>
       <Input
         type={field.kind === "number" ? "number" : "text"}
         min={field.min}
