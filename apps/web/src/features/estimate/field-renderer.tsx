@@ -3,6 +3,7 @@
 import type { FieldError as HookFormFieldError, UseFormReturn } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -49,7 +50,8 @@ function SelectField({ field, form, source, onManualEdit }: FieldRendererProps) 
   return (
     <Field data-invalid={Boolean(error)}>
       <FieldLabel htmlFor={field.name}>
-        {field.label}
+        <span>{field.label}</span>
+        {field.description ? <InfoTooltip label={`What is ${field.label}?`}>{field.description}</InfoTooltip> : null}
         <FieldBadges source={source} />
       </FieldLabel>
       <Controller
@@ -79,7 +81,7 @@ function SelectField({ field, form, source, onManualEdit }: FieldRendererProps) 
           </Select>
         )}
       />
-      <FieldMeta field={field} source={source} />
+      <FieldMeta source={source} />
       <FieldError>{error?.message}</FieldError>
     </Field>
   );
@@ -93,7 +95,8 @@ function InputField({ field, form, source, onManualEdit }: FieldRendererProps) {
   return (
     <Field data-invalid={Boolean(error)}>
       <FieldLabel htmlFor={field.name}>
-        {field.label}
+        <span>{field.label}</span>
+        {field.description ? <InfoTooltip label={`What is ${field.label}?`}>{field.description}</InfoTooltip> : null}
         <FieldBadges source={source} />
       </FieldLabel>
       <Input
@@ -108,7 +111,7 @@ function InputField({ field, form, source, onManualEdit }: FieldRendererProps) {
           onChange: onManualEdit,
         })}
       />
-      <FieldMeta field={field} source={source} />
+      <FieldMeta source={source} />
       <FieldError>{error?.message}</FieldError>
     </Field>
   );
@@ -127,9 +130,8 @@ function FieldBadges({ source }: { source?: FieldSourceMetadata }) {
   );
 }
 
-function FieldMeta({ field, source }: { field: EstimateFieldConfig; source?: FieldSourceMetadata }) {
+function FieldMeta({ source }: { source?: FieldSourceMetadata }) {
   const details = [
-    field.description,
     source?.confidence !== undefined ? `${Math.round(source.confidence * 100)}% confidence` : undefined,
   ].filter(Boolean);
 
