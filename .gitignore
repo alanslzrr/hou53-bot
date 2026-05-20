@@ -252,6 +252,7 @@ next-env.d.ts
 .env
 .env.*
 !.env.example
+gha-creds-*.json
 
 # Playwright / test artifacts (added in Phase 8)
 /test-results/
