@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Lint Python
+        run: uv run ruff check
+
+      - name: Check Python formatting
+        run: uv run ruff format --check
+
+      - name: Typecheck Python
+        run: uv run mypy
+
+      - name: Test Python
+        run: uv run pytest -m "not integration"
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+
+    env:
+      AUTH_SECRET: ci-placeholder
+      AUTH_TRUST_HOST: "true"
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      HOU53_API_AUTH_MODE: none
+      HOU53_API_BASE_URL: http://localhost:8000
+      HOU53_API_TIMEOUT_MS: "10000"
+      HOU53_AUTH_DISPLAY_NAME: CI User
+      HOU53_AUTH_EMAIL: demo@hou53.local
+      HOU53_AUTH_PASSWORD_HASH: ci-placeholder
+      HOU53_READINESS_LLM_ENABLED: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+      OPENAI_API_KEY: ci-placeholder
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Set up pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.30.3 --activate
+
+      - name: Install web dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test web
+        run: pnpm --dir apps/web test
+
+      - name: Typecheck web
+        run: pnpm --dir apps/web typecheck
+
+      - name: Build web
+        run: pnpm --dir apps/web build
