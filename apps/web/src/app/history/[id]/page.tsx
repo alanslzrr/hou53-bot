@@ -4,11 +4,13 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { AppShell } from "@/components/app-shell";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatDateTime, formatUsd } from "@/lib/format";
+import { getModelFeatureCopy, humanizeExplanationText } from "@/lib/housing/feature-copy";
 import { getPredictionForUser } from "@/server/predictions/repository";
 
 type PredictionDetailPageProps = {
@@ -27,6 +29,7 @@ export default async function PredictionDetailPage({ params }: PredictionDetailP
     notFound();
   }
   const readiness = row.parseMetadataJsonb?.readiness;
+  const topFeatureNames = row.shapJsonb.map((feature) => feature.feature);
 
   return (
     <AppShell userName={session.user.name || session.user.email}>
@@ -46,16 +49,25 @@ export default async function PredictionDetailPage({ params }: PredictionDetailP
                 </Badge>
               ) : null}
             </div>
-            <p className="text-muted-foreground text-sm">{row.resultJsonb.explanation.natural_language}</p>
+            <p className="text-muted-foreground text-sm">
+              {humanizeExplanationText(row.resultJsonb.explanation.natural_language, topFeatureNames)}
+            </p>
             <Separator />
             <div className="flex flex-col gap-3">
               <p className="font-medium text-sm">SHAP drivers</p>
-              {row.shapJsonb.map((feature) => (
-                <div key={feature.feature} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="truncate">{feature.feature}</span>
-                  <span className="font-mono">{formatUsd(feature.contribution_usd)}</span>
-                </div>
-              ))}
+              {row.shapJsonb.map((feature) => {
+                const copy = getModelFeatureCopy(feature.feature);
+
+                return (
+                  <div key={feature.feature} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span className="truncate">{copy.label}</span>
+                      <InfoTooltip label={`What is ${copy.label}?`}>{copy.description}</InfoTooltip>
+                    </span>
+                    <span className="shrink-0 font-mono">{formatUsd(feature.contribution_usd)}</span>
+                  </div>
+                );
+              })}
             </div>
             <Button variant="outline" asChild>
               <Link href={"/history" as Route}>Back to history</Link>
