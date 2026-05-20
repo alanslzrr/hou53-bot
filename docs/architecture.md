@@ -78,6 +78,25 @@ standard Auth.js adapter tables, not changing this schema.
   shows up in every structlog line. Cloud Logging picks them up
   automatically.
 
+## CI/CD flow
+
+GitHub Actions owns orchestration; Google Cloud Build still owns image
+builds.
+
+- **CI** (`.github/workflows/ci.yml`) runs on pull requests and pushes
+  to `main`. It is offline-only: Python lint/format/type/tests,
+  Vitest, TypeScript, and `next build` with placeholder environment
+  values. It does not call OpenAI, Neon, or the deployed FastAPI
+  service.
+- **Deploy GCP** (`.github/workflows/deploy-gcp.yml`) runs only after
+  CI succeeds on `main`, and can also be started manually with
+  `target=api|web|both`. It authenticates through GitHub OIDC /
+  Workload Identity Federation, submits the existing Cloud Build
+  configs, then updates the Cloud Run service images.
+- **Database migrations and live OpenAI evaluations stay manual.** A
+  deploy changes containers only; it does not mutate Neon and does not
+  spend provider tokens.
+
 ## What is intentionally not here yet
 
 - **Confidence intervals.** The API returns a point estimate plus

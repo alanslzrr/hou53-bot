@@ -30,26 +30,20 @@ EDA notebook) is documented in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 ### Production (Google Cloud Run)
 
-```bash
-gcloud builds submit \
-  --config=.gcp/cloudbuild-api.yaml \
-  --substitutions=_IMAGE=<region>-docker.pkg.dev/<project>/hou53/api:latest
-
-gcloud builds submit \
-  --config=.gcp/cloudbuild-web.yaml \
-  --substitutions=_IMAGE=<region>-docker.pkg.dev/<project>/hou53/web:latest
-
-gcloud run deploy hou53-api --image=<...> --region=<...>
-gcloud run deploy hou53-web --image=<...> --region=<...>
-```
+Deploys are automated from `main` with GitHub Actions. CI runs offline
+checks only; after CI succeeds, the deploy workflow authenticates to
+GCP with Workload Identity Federation, builds images through the
+existing Cloud Build configs, and updates the Cloud Run services. The
+same workflow can also be started manually for `api`, `web`, or
+`both`.
 
 Image details: [`apps/api/Dockerfile.gcp`](./apps/api/Dockerfile.gcp)
 (model artifact and dataset baked in) and
 [`apps/web/Dockerfile.gcp`](./apps/web/Dockerfile.gcp). Required env
-vars: [`apps/web/.env.example`](./apps/web/.env.example). The web
-service mints Google ID tokens to call the API, so reviewers don't
-need an API key to hit the deployed stack — only valid demo
-credentials.
+vars: [`apps/web/.env.example`](./apps/web/.env.example). Runtime
+secrets stay in Cloud Run; database migrations and live OpenAI
+evaluations are not part of deploy. The full CI/CD flow is documented
+in [`docs/architecture.md`](./docs/architecture.md#cicd-flow).
 
 ## Technical decisions
 
@@ -83,12 +77,10 @@ Context that doesn't fit a single ADR:
 
 ## Aspects not implemented
 
-- **NLP parser accuracy measured against the live OpenAI API.** The
-  harness and dataset are in
-  [`ml/src/hou53_ml/evaluation/nlp_parser.py`](./ml/src/hou53_ml/evaluation/nlp_parser.py)
-  and [`ml/evals/nlp_parser/`](./ml/evals/nlp_parser/); no number
-  produced.
-- **GitHub Actions.** None configured.
+- **Live OpenAI evals in CI.** The NLP parser has an offline harness
+  and a recorded baseline under [`ml/evals/nlp_parser/`](./ml/evals/nlp_parser/),
+  but provider-backed evaluations stay manual so CI remains
+  deterministic and cost-free.
 - **Sentry, distributed tracing, and alerts.** Cloud Logging is the
   only observability layer.
 - **Multi-model blending and Optuna hyperparameter search.** Single
